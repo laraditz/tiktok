@@ -18,15 +18,21 @@ return [
         'prefix' => 'tiktok',
         'auth' => [
             'access_token' => '/api/v2/token/get',
+            'refresh_token' => '/api/v2/token/refresh',
         ],
         'authorization' => [
             'shops' => '/authorization/202309/shops'
+        ],
+        'event' => [
+            'webhook_list' => '/event/202309/webhooks',
+            'update_webhook' => 'PUT /event/202309/webhooks',
+            'delete_webhook' => 'DELETE /event/202309/webhooks',
         ],
         'seller' => [
             'shops' => '/seller/202309/shops'
         ],
         'order' => [
-            'list' => '/order/202309/orders/search',
+            'list' => 'POST /order/202309/orders/search',
             'detail' => '/order/202309/orders',
             'price_detail' => '/order/202407/orders/{order_id}/price_detail',
             'external_orders' => '/order/202406/orders/{order_id}/external_orders',
@@ -35,7 +41,7 @@ return [
         ],
         'product' => [
             'get' => '/product/202309/products/{product_id}',
-            'search' => '/product/202502/products/search',
+            'search' => 'POST /product/202502/products/search',
         ],
     ],
     'middleware' => ['api'],

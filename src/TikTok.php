@@ -11,7 +11,7 @@ use Illuminate\Support\Str;
 
 class TikTok
 {
-    private $services = ['auth', 'authorization', 'seller', 'order'];
+    private $services = ['auth', 'authorization', 'seller', 'order', 'product', 'event'];
 
     private ?TiktokShop $shop = null;
 
@@ -69,21 +69,37 @@ class TikTok
         }
     }
 
-    public function getSignature(string $route, array $payload): string
+    public function getSignature(string $route, string $method, array $queryString = [], array $payload = []): string
     {
         $app_secret = $this->getAppSecret();
         $sign_method = $this->getSignMethod();
 
-        $payload = Arr::except($payload, ['access_token', 'sign']);
-        ksort($payload);
+        $queryString = Arr::except($queryString, ['access_token', 'sign']);
+        ksort($queryString);
 
-        $data = urldecode(Arr::query($payload));
+        $data = urldecode(Arr::query($queryString));
 
         $data = $route . Str::remove(['=', '&'], $data);
+
+        if (in_array(strtoupper($method), ['POST', 'PUT', 'PATCH', 'DELETE'])) {
+            $data .= json_encode($payload);
+        }
 
         $data = $app_secret . $data . $app_secret;
 
         $signature = hash_hmac($sign_method, $data, $app_secret);
+
+        return $signature;
+    }
+
+    public function getWebhookSignature(string $body): string
+    {
+        $app_key = $this->getAppKey();
+        $app_secret = $this->getAppSecret();
+        $sign_method = $this->getSignMethod();
+        $base = $app_key . $body;
+
+        $signature = hash_hmac($sign_method, $base, $app_secret);
 
         return $signature;
     }
@@ -166,5 +182,10 @@ class TikTok
     public function getShop(): ?TiktokShop
     {
         return $this->shop;
+    }
+
+    public function getShopCipher(): ?string
+    {
+        return $this->getShop()?->cipher;
     }
 }

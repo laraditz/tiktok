@@ -20,6 +20,7 @@ class BaseService
 
     public function __construct(
         public TikTok $tiktok,
+        private bool $shopCipher = false,
         private ?string $route = '',
         private ?string $method = 'get',
         private ?array $queryString = [],
@@ -43,7 +44,22 @@ class BaseService
             $this->setRouteFromConfig($fqcn, $methodName);
 
             if (count($arguments) > 0) {
-                $this->setPayload($arguments);
+                $queryString = data_get($arguments, 'query');
+                $body = data_get($arguments, 'body');
+                $shopCipher = data_get($arguments, 'shop_cipher');
+
+                if ($queryString && is_array($queryString)) {
+                    $this->setQueryString($queryString);
+                }
+
+                if ($body && is_array($body)) {
+                    $this->setPayload($body);
+                }
+
+                if ($shopCipher === true) {
+                    $this->shopCipher = true;
+                }
+
             }
 
             return $this->execute();
@@ -78,27 +94,42 @@ class BaseService
         $method = $this->getMethod();
         $url = $this->getUrl();
 
-        $response = Http::withHeaders($this->getHeaders())->asJson();
+        $client = Http::withHeaders($this->getHeaders())->asJson();
 
+        $queryString = $this->getQueryString();
         $payload = $this->getPayload();
 
         $commonParameters = $this->getCommonParameters();
 
-        $payload = array_merge($commonParameters, $payload);
+        $queryString = array_merge($commonParameters, $queryString);
 
-        $signature = $this->tiktok->getSignature($this->getRoute(), $payload);
+        $signature = $this->tiktok->getSignature(
+            route: $this->getRoute(),
+            method: $method,
+            queryString: $queryString,
+            payload: $payload
+        );
 
         throw_if(!$signature, LogicException::class, __('Failed to generate signature.'));
 
-        $payload = array_merge($payload, ['sign' => $signature]);
+        $queryString = array_merge($queryString, ['sign' => $signature]);
+        // dd($queryString);
+
+        if ($queryString && count($queryString) > 0) {
+            $url = $url . '?' . http_build_query($queryString);
+        }
 
         $request = TiktokRequest::create([
             'action' => $this->serviceName . '::' . $this->methodName,
             'url' => $url,
-            'request' => $payload,
+            'request' => $payload && count($payload) > 0 ? $payload : null,
         ]);
 
-        $response = $response->$method($url, $payload);
+        $response = $payload && count($payload) > 0
+            ? $client->$method($url, $payload)
+            : $client->$method($url);
+
+        // dd($response?->body(), $url, $payload, $this->tiktok->getShop());
 
         $response->throw(function (Response $response, RequestException $e) use ($request) {
             $result = $response->json();
@@ -155,7 +186,7 @@ class BaseService
     public function getHeaders(): array
     {
         $headers = [
-            'content-type' => 'application/json',
+            'Content-Type' => 'application/json',
         ];
 
         $accessToken = $this->tiktok->getAccessToken();
@@ -175,7 +206,9 @@ class BaseService
             // 'sign_method' => $this->tiktok->getSignMethod(),
         ];
 
-
+        if ($this->shopCipher === true) {
+            $params['shop_cipher'] = $this->tiktok->getShopCipher();
+        }
 
         return $params;
     }

@@ -13,10 +13,10 @@ return new class extends Migration {
         Schema::create('tiktok_requests', function (Blueprint $table) {
             $table->ulid('id')->primary();
             $table->string('action')->nullable();
-            $table->string('url')->nullable();
+            $table->text('url')->nullable();
             $table->json('request')->nullable();
             $table->string('request_id')->nullable();
-            $table->unsignedMediumInteger('code')->nullable();
+            $table->string('code', 50)->nullable();
             $table->string('message')->nullable();
             $table->json('response')->nullable();
             $table->string('error')->nullable();
