@@ -20,10 +20,12 @@ class SellerController extends Controller
         try {
 
             $accessToken = TikTok::auth()->accessToken(
-                app_key: $tiktok->getAppKey(),
-                app_secret: $tiktok->getAppSecret(),
-                auth_code: $code,
-                grant_type: 'authorized_code'
+                query: [
+                    'app_key' => $tiktok->getAppKey(),
+                    'app_secret' => $tiktok->getAppSecret(),
+                    'auth_code' => $code,
+                    'grant_type' => 'authorized_code'
+                ]
             );
 
             $shop = TikTok::getShop();
