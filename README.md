@@ -53,12 +53,11 @@ https://your-app-url.com/tiktok/seller/authorized
 ## Usage
 
 ```php
-use TikTok;
+// Using service container
+$seller = app('tiktok')->seller()->shops();
 
-
-$seller = TikTok::seller()->shops();
-
-$products = TikTok::product()->search(
+// Using facade
+$products = \TikTok::product()->search(
     shop_cipher: true,
     query: [
         'page_size' => 10
