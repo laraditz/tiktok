@@ -54,7 +54,7 @@ class WebhookController extends Controller
         }
 
         try {
-            event(new WebhookReceived(eventType: $eventType, data: $data));
+            event(new WebhookReceived(eventType: $eventType, data: $request->all()));
 
             $webhook = TiktokWebhook::create([
                 'shop_id' => $shopId,
