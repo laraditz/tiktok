@@ -20,10 +20,12 @@ class WebhookController extends Controller
         throw_if(!$signature, TikTokException::class, __('Missing Signature.'));
         throw_if(!$request->all(), TikTokException::class, __('Missing payload.'));
 
+        logger()->info('TikTok web push: ', $request->all());
+
         $match_signature = app('tiktok')->getWebhookSignature(json_encode($request->all()));
         // dd($match_signature);
 
-        // throw_if($signature !== $match_signature, TikTokException::class, __('Signature not matched.'));
+        throw_if($signature !== $match_signature, TikTokException::class, __('Signature not matched.'));
 
         $shopId = $request->string('shop_id');
         $typeId = $request->type;
