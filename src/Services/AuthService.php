@@ -65,28 +65,6 @@ class AuthService extends BaseService
 
         try {
             $authorizedShops = TikTok::authorization(access_token: $shop->accessToken?->access_token)->shops();
-            $shops = data_get($authorizedShops, 'data.shops');
-
-            if ($shops && is_array($shops) && count($shops) > 0) {
-                foreach ($shops as $shop) {
-                    $shop_id = data_get($shop, 'id');
-                    $shop_code = data_get($shop, 'code');
-                    $shop_name = data_get($shop, 'name');
-
-                    TiktokShop::updateOrCreate(
-                        [
-                            'name' => $shop_name,
-                        ],
-                        [
-                            'identifier' => $shop_id,
-                            'code' => $shop_code,
-                            'region' => data_get($shop, 'region'),
-                            'seller_type' => data_get($shop, 'seller_type'),
-                            'cipher' => data_get($shop, 'cipher'),
-                        ]
-                    );
-                }
-            }
         } catch (\Throwable $th) {
             // throw $th;
         }

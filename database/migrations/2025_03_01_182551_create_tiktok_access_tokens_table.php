@@ -13,8 +13,8 @@ return new class extends Migration {
         Schema::create('tiktok_access_tokens', function (Blueprint $table) {
             $table->id();
             $table->morphs('subjectable');
-            $table->string('access_token')->nullable();
-            $table->string('refresh_token')->nullable();
+            $table->text('access_token')->nullable();
+            $table->text('refresh_token')->nullable();
             $table->datetime('expires_at')->nullable();
             $table->datetime('refresh_expires_at')->nullable();
             $table->string('open_id')->nullable();
