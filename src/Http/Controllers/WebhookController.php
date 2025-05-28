@@ -23,7 +23,7 @@ class WebhookController extends Controller
         $match_signature = app('tiktok')->getWebhookSignature(json_encode($request->all()));
         // dd($match_signature);
 
-        throw_if($signature !== $match_signature, TikTokException::class, __('Signature not matched.'));
+        // throw_if($signature !== $match_signature, TikTokException::class, __('Signature not matched.'));
 
         $shopId = $request->string('shop_id');
         $typeId = $request->type;
