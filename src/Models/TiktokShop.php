@@ -18,6 +18,6 @@ class TiktokShop extends Model
 
     public function accessToken()
     {
-        return $this->morphOne(TikTokAccessToken::class, 'subjectable');
+        return $this->morphOne(TiktokAccessToken::class, 'subjectable');
     }
 }
