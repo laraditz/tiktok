@@ -46,12 +46,6 @@ class TikTok
             }
         }
 
-        if (!($this->getShop() || in_array($method, ['auth']))) {
-            $this->setShop();
-
-            throw_if(!($this->getShop() || in_array($method, ['auth'])), LogicException::class, __('Missing Seller ID.'));
-        }
-
         $property_name = strtolower(Str::snake($method));
 
         if (in_array($property_name, $this->services)) {

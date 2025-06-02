@@ -35,6 +35,18 @@ class BaseService
         $this->serviceName = $oClass->getShortName();
         $this->methodName = $methodName;
 
+        if (!$this->tiktok->getShop()) {
+
+            if ($this->serviceName === 'AuthService' && $this->methodName === 'accessToken') {
+                // no need to set shop
+            } else {
+                $this->tiktok->setShop();
+
+                throw_if(!$this->tiktok->getShop(), TikTokAPIError::class, __('Missing Seller ID.'));
+            }
+
+        }
+
         // if method exists, return
         if (method_exists($this, $methodName)) {
             return $this->$methodName($arguments);
@@ -97,27 +109,37 @@ class BaseService
         $client = Http::withHeaders($this->getHeaders())->asJson();
 
         $queryString = $this->getQueryString();
-        $payload = $this->getPayload();
-
         $commonParameters = $this->getCommonParameters();
 
         $queryString = array_merge($commonParameters, $queryString);
 
-        $signature = $this->tiktok->getSignature(
-            route: $this->getRoute(),
-            method: $method,
-            queryString: $queryString,
-            payload: $payload
-        );
+        $this->setQueryString($queryString);
 
-        throw_if(!$signature, LogicException::class, __('Failed to generate signature.'));
+        $this->beforeRequest();
 
-        $queryString = array_merge($queryString, ['sign' => $signature]);
+        if ($this->requireSignature()) {
+            $signature = $this->tiktok->getSignature(
+                route: $this->getRoute(),
+                method: $method,
+                queryString: $this->getQueryString(),
+                payload: $this->getPayload()
+            );
+
+            throw_if(!$signature, LogicException::class, __('Failed to generate signature.'));
+
+            $queryString = array_merge($this->getQueryString(), ['sign' => $signature]);
+            $this->setQueryString($queryString);
+        }
+
+        $queryString = $this->getQueryString();
+
         // dd($queryString);
 
         if ($queryString && count($queryString) > 0) {
             $url = $url . '?' . http_build_query($queryString);
         }
+
+        $payload = $this->getPayload();
 
         $request = TiktokRequest::create([
             'action' => $this->serviceName . '::' . $this->methodName,
@@ -174,6 +196,24 @@ class BaseService
         throw new TikTokAPIError(['code' => __('Error'), 'message' => __('API Server Error')]);
     }
 
+    private function requireSignature(): bool
+    {
+        if ($this->serviceName === 'AuthService') {
+            return false;
+        }
+
+        return true;
+    }
+
+    private function beforeRequest(): void
+    {
+        $methodName = 'before' . Str::studly($this->methodName) . 'Request';
+
+        if (method_exists($this, $methodName)) {
+            $this->$methodName();
+        }
+    }
+
     private function afterRequest(TiktokRequest $request, array $result = []): void
     {
         $methodName = 'after' . Str::studly($this->methodName) . 'Request';
@@ -191,7 +231,9 @@ class BaseService
 
         $accessToken = $this->tiktok->getAccessToken();
 
-        if ($accessToken) {
+        if ($this->serviceName === 'AuthService') {
+            // no need access token for this service and method
+        } elseif ($accessToken) {
             $headers['x-tts-access-token'] = $accessToken;
         }
 
