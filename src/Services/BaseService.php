@@ -2,21 +2,23 @@
 
 namespace Laraditz\TikTok\Services;
 
+use LogicException;
 use BadMethodCallException;
-use Illuminate\Http\Client\RequestException;
+use Illuminate\Support\Str;
+use Laraditz\TikTok\TikTok;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Str;
-use Laraditz\TikTok\Exceptions\TikTokAPIError;
 use Laraditz\TikTok\Models\TiktokRequest;
-use Laraditz\TikTok\TikTok;
-use LogicException;
+use Illuminate\Http\Client\RequestException;
+use Laraditz\TikTok\Exceptions\TikTokAPIError;
+use Laraditz\TikTok\Events\TikTokRequestFailed;
 
 class BaseService
 {
     public string $methodName;
 
     public string $serviceName;
+    public string $fqcn;
 
     public function __construct(
         public TikTok $tiktok,
@@ -32,6 +34,7 @@ class BaseService
     {
         $oClass = new \ReflectionClass(get_called_class());
         $fqcn = $oClass->getName();
+        $this->fqcn = $fqcn;
         $this->serviceName = $oClass->getShortName();
         $this->methodName = $methodName;
 
@@ -162,38 +165,51 @@ class BaseService
                 'message' => $message ? Str::limit(trim($message), 255) : null,
                 'error' => Str::limit(trim($e->getMessage()), 255),
             ]);
+
+            $this->fireFailedEvents($message);
         });
+
+        // dd($response->successful(), $response->failed(), $response->body(), $response->getStatusCode());
 
         $result = $response->json();
 
         if ($response->successful()) {
             $code = data_get($result, 'code');
+            $message = data_get($result, 'message');
 
             $request->update([
                 'code' => $code,
-                'message' => data_get($result, 'message'),
+                'message' => $message,
                 'response' => $result,
                 'request_id' => data_get($result, 'request_id'),
-                'error' => $code != '0' ? (data_get($result, 'message') ?? data_get($result, 'code')) : null
+                'error' => $code != '0' ? ($message ?? $code) : null
             ]);
 
             // success
             if ($code == '0') {
-
                 $this->afterRequest($request, $result);
 
                 return $result;
             }
 
+            $this->fireFailedEvents($message);
+
             // http success but api request failed
             throw new TikTokAPIError($result ?? ['code' => __('Error')]);
         }
 
-        $request->update([
-            'error' => __('API Server Error'),
-        ]);
+        if (!$request->error) {
+            $request->update([
+                'error' => __('API Server Error'),
+            ]);
+        }
 
         throw new TikTokAPIError(['code' => __('Error'), 'message' => __('API Server Error')]);
+    }
+
+    private function fireFailedEvents(?string $message = null)
+    {
+        event(new TikTokRequestFailed(fqcn: $this->fqcn, methodName: $this->methodName, message: $message));
     }
 
     private function requireSignature(): bool

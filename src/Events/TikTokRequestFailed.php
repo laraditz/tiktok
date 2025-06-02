@@ -5,14 +5,19 @@ namespace Laraditz\TikTok\Events;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Foundation\Events\Dispatchable;
 
-class WebhookReceived
+class TikTokRequestFailed
 {
     use Dispatchable, SerializesModels;
 
+    /**
+     * Create a new event instance.
+     */
     public function __construct(
-        public string $eventType,
-        public array $data,
+        public string $fqcn,
+        public string $methodName,
+        public ?string $message = null,
     ) {
-
+        //
     }
+
 }

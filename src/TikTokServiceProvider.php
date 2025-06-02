@@ -41,7 +41,12 @@ class TikTokServiceProvider extends ServiceProvider
             ], 'lang');*/
 
             // Registering package commands.
-            // $this->commands([]);
+            if ($this->app->runningInConsole()) {
+                $this->commands([
+                    Console\RefreshTokenCommand::class,
+                    Console\FlushExpiredTokenCommand::class,
+                ]);
+            }
         }
     }
 

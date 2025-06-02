@@ -16,7 +16,6 @@ class SellerController extends Controller
 
         $tiktok = app('tiktok');
 
-
         try {
 
             $accessToken = TikTok::auth()->accessToken(

@@ -50,6 +50,25 @@ On TikTok Shop Partner Center, configure this **Redirect URL** on your App Manag
 https://your-app-url.com/tiktok/seller/authorized
 ```
 
+## Available Methods
+
+Below are all methods available under this package. Parameters for all method calls will follow exactly as in [TikTok Shop API Documentation](https://partner.tiktokshop.com/docv2/page/6789f6f818828103147a8b05).
+
+| Service name    | Method name     | Description                                                                                                |
+| --------------- | --------------- | ---------------------------------------------------------------------------------------------------------- |
+| auth()          | accessToken()   | Generate access token for API call.                                                                        |
+|                 | refreshToken()  | Refresh access token before it expired.                                                                    |
+| authorization() | shops()         | etrieves the list of shops that a seller has authorized for an app.                                        |
+| event()         | webhookList()   | Retrieves a shop's webhooks and the corresponding webhook URLs.                                            |
+|                 | updateWebhook() | Updates the shop's webhook URL for a specific event topic.                                                 |
+|                 | deleteWebhook() | Deletes the shop's webhook URL for a specific event topic.                                                 |
+| seller()        | shops()         | Retrieves all active shops that belong to a seller.                                                        |
+| order()         | list()          | Returns a list of orders created or updated during the timeframe indicated by the specified parameters.    |
+|                 | detail()        | Get the detailed order information of an order.                                                            |
+|                 | priceDetail()   | Get the detailed pricing calculation information of an order or a line item, including vouchers, tax, etc. |
+| product()       | get()           | Retrieve all properties of a product that is in the DRAFT, PENDING, or ACTIVATE status.                    |
+|                 | list()          | Retrieve a list of products that meet the specified conditions.                                            |
+
 ## Usage
 
 ```php
@@ -57,8 +76,8 @@ https://your-app-url.com/tiktok/seller/authorized
 $seller = app('tiktok')->seller()->shops();
 
 // Using facade
-$products = \TikTok::product()->search(
-    shop_cipher: true,
+$products = \TikTok::product()->list(
+    shop_cipher: true, // set to true if request require shop_cipher
     query: [
         'page_size' => 10
     ],
@@ -72,9 +91,10 @@ $products = \TikTok::product()->search(
 
 This package also provide an event to allow your application to listen for TikTok webhook. You can create your listener and register it under event below.
 
-| Event                                  | Description                         |
-| -------------------------------------- | ----------------------------------- |
-| Laraditz\TikTok\Events\WebhookReceived | Receive a push content from TikTok. |
+| Event                                      | Description                                  |
+| ------------------------------------------ | -------------------------------------------- |
+| Laraditz\TikTok\Events\WebhookReceived     | Receive a push content from TikTok.          |
+| Laraditz\TikTok\Events\TikTokRequestFailed | Trigger when a request to TikTok API failed. |
 
 Read more about TikTok Webhooks [here](https://partner.tiktokshop.com/docv2/page/64f1997e93f5dc028e357341).
 
@@ -97,6 +117,20 @@ $webhooks = TikTok::event()->updateWebhook(
     ]
 );
 ```
+
+## Commands
+
+```bash
+tiktok:flush-expired-token    Flush expired access token.
+tiktok:refresh-token          Refresh existing access token before it expired.
+```
+
+As TikTok access token has an expired date, you may want to set `tiktok:refresh-token` on scheduler and run it before it expires to refresh the access token. Otherwise, you need the seller to reauthorize and generate a new access token.
+
+#### Token Duration
+
+- Access token: 7 days
+- Refresh token: +-2 months
 
 ### Testing
 

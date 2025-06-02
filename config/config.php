@@ -41,7 +41,7 @@ return [
         ],
         'product' => [
             'get' => '/product/202309/products/{product_id}',
-            'search' => 'POST /product/202502/products/search',
+            'list' => 'POST /product/202502/products/search',
         ],
     ],
     'middleware' => ['api'],
