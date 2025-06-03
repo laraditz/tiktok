@@ -34,14 +34,15 @@ class RefreshTokenCommand extends Command
             $this->info(__('<fg=yellow>Refreshing :subjectable access token.</>', ['subjectable' => $item->subjectable?->name ?? '']));
             try {
                 TikTok::auth()->refreshToken();
+
+                $this->info(__(':subjectable access token was refresh.', ['subjectable' => $item->subjectable?->name ?? 'The']));
             } catch (TikTokAPIError $th) {
                 // dd($th->getResult());
+                $this->error(__(':subjectable access token failed to refresh.', ['subjectable' => $item->subjectable?->name ?? 'The']));
             } catch (\Throwable $th) {
-                //throw $th;
-                // dd($th);
+                //throw $th;               
+                $this->error(__(':subjectable access token failed to refresh.', ['subjectable' => $item->subjectable?->name ?? 'The']));
             }
-
-            $this->info(__(':subjectable access token was refresh.', ['subjectable' => $item->subjectable?->name ?? 'The']));
         });
     }
 
