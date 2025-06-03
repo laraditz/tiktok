@@ -15,6 +15,8 @@ class TikTokRequestFailed
     public function __construct(
         public string $fqcn,
         public string $methodName,
+        public ?array $query = [],
+        public ?array $body = [],
         public ?string $message = null,
     ) {
         //

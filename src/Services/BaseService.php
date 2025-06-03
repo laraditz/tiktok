@@ -209,7 +209,13 @@ class BaseService
 
     private function fireFailedEvents(?string $message = null)
     {
-        event(new TikTokRequestFailed(fqcn: $this->fqcn, methodName: $this->methodName, message: $message));
+        event(new TikTokRequestFailed(
+            fqcn: $this->fqcn,
+            methodName: $this->methodName,
+            query: $this->getQueryString(),
+            body: $this->getPayload(),
+            message: $message
+        ));
     }
 
     private function requireSignature(): bool
