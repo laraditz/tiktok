@@ -43,6 +43,10 @@ return [
             'get' => '/product/202309/products/{product_id}',
             'list' => 'POST /product/202502/products/search',
         ],
+        'return' => [
+            'get' => '/return_refund/202309/returns/{return_id}/records',
+            'list' => 'POST /return_refund/202309/returns/search',
+        ],
     ],
     'middleware' => ['api'],
 ];

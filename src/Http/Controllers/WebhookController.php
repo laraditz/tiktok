@@ -103,16 +103,17 @@ class WebhookController extends Controller
 
         if ($data) {
             $orderId = data_get($data, 'order_id');
+            $returnId = data_get($data, 'return_id');
             $shopId = $request->shop_id;
 
             TiktokReturnOrder::updateOrCreate([
                 'order_id' => $orderId,
-                'shop_id' => $shopId
+                'shop_id' => $shopId,
+                'return_id' => $returnId,
             ], [
                 'role' => data_get($data, 'return_role'),
                 'type' => data_get($data, 'return_type'),
                 'status' => data_get($data, 'return_status'),
-                'return_id' => data_get($data, 'return_id'),
                 'create_time' => data_get($data, 'create_time'),
                 'update_time' => data_get($data, 'update_time'),
             ]);
