@@ -25,8 +25,9 @@ class BaseService
         private bool $shopCipher = false,
         private ?string $route = '',
         private ?string $method = 'get',
-        private ?array $queryString = [],
-        private ?array $payload = [],
+        private ?array $queryString = [], // for url query string
+        private ?array $payload = [], // for body payload
+        private null|array|string|int $params = null, // for path variables
     ) {
     }
 
@@ -56,12 +57,12 @@ class BaseService
         }
 
         if (in_array(Str::snake($methodName), $this->getAllowedMethods())) {
-            $this->setRouteFromConfig($fqcn, $methodName);
 
             if (count($arguments) > 0) {
                 $queryString = data_get($arguments, 'query');
                 $body = data_get($arguments, 'body');
                 $shopCipher = data_get($arguments, 'shop_cipher');
+                $params = data_get($arguments, 'params');
 
                 if ($queryString && is_array($queryString)) {
                     $this->setQueryString($queryString);
@@ -71,11 +72,16 @@ class BaseService
                     $this->setPayload($body);
                 }
 
+                if ($params) {
+                    $this->setParams($params);
+                }
+
                 if ($shopCipher === true) {
                     $this->shopCipher = true;
                 }
-
             }
+
+            $this->setRouteFromConfig($fqcn, $methodName);
 
             return $this->execute();
         }
@@ -91,6 +97,8 @@ class BaseService
     {
         $route_prefix = str($fqcn)->afterLast('\\')->remove('Service')->lower()->value;
         $route_name = str($method)->snake()->value;
+        $route_path = '';
+        $params = $this->getParams();
 
         $route = config('tiktok.routes.' . $route_prefix . '.' . $route_name);
 
@@ -98,10 +106,22 @@ class BaseService
 
         if (count($split) == 2) {
             $this->setMethod(data_get($split, '0'));
-            $this->setRoute(data_get($split, '1'));
+            $route_path = data_get($split, '1');
         } elseif (count($split) == 1) {
-            $this->setRoute(data_get($split, '0'));
+            $route_path = data_get($split, '0');
         }
+
+        if ($params) {
+            if (is_array($params)) {
+                $mappedParams = collect($params)->mapWithKeys(fn($value, $key) => ["{" . $key . "}" => $value]);
+
+                $route_path = Str::swap($mappedParams->toArray(), $route);
+            } elseif (is_string($params) || is_numeric($params)) {
+                $route_path = str_replace('{id}', $params, $route);
+            }
+        }
+
+        $this->setRoute($route_path);
     }
 
     protected function execute()
@@ -295,7 +315,9 @@ class BaseService
             $base_url = config('tiktok.base_url');
         }
 
-        return $base_url . $this->getRoute();
+        $url = $base_url . $this->getRoute();
+
+        return $url;
     }
 
     protected function route(string $route): self
@@ -366,6 +388,16 @@ class BaseService
     protected function getQueryString(): array
     {
         return $this->queryString;
+    }
+
+    protected function setParams(null|array|string|int $params): void
+    {
+        $this->params = $params;
+    }
+
+    protected function getParams(): null|array|string|int
+    {
+        return $this->params;
     }
 
 }

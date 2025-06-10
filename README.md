@@ -68,6 +68,8 @@ Below are all methods available under this package. Parameters for all method ca
 |                 | priceDetail()   | Get the detailed pricing calculation information of an order or a line item, including vouchers, tax, etc. |
 | product()       | get()           | Retrieve all properties of a product that is in the DRAFT, PENDING, or ACTIVATE status.                    |
 |                 | list()          | Retrieve a list of products that meet the specified conditions.                                            |
+| return()        | get()           | Use this API to get a list of return records.                                                              |
+|                 | list()          | Use this API to retrieve one or more returns.                                                              |
 
 ## Usage
 
@@ -84,6 +86,15 @@ $products = \TikTok::product()->list(
     body: [
         'status' => 'ALL'
     ]
+);
+
+// Pass path variables to params
+// e.g. path: /return_refund/202309/returns/{return_id}/records
+$returnOrders = TikTok::return()->get(
+    shop_cipher: true,
+    params: [
+        'return_id' => '1681299342034327'
+    ],
 );
 ```
 
