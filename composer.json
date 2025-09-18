@@ -46,7 +46,7 @@
         "Laraditz\\TikTok\\TikTokServiceProvider"
       ],
       "aliases": {
-        "TikTok": "Laraditz\\TikTok\\TikTokFacade"
+        "TikTok": "Laraditz\\TikTok\\Facades\\TikTok"
       }
     }
   }

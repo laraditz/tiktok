@@ -1,13 +1,13 @@
 <?php
 
-namespace Laraditz\TikTok;
+namespace Laraditz\TikTok\Facades;
 
 use Illuminate\Support\Facades\Facade;
 
 /**
  * @see \Laraditz\TikTok\Skeleton\SkeletonClass
  */
-class TikTokFacade extends Facade
+class TikTok extends Facade
 {
     /**
      * Get the registered name of the component.

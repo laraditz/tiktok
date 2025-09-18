@@ -44,11 +44,10 @@ class BaseService
             if ($this->serviceName === 'AuthService' && $this->methodName === 'accessToken') {
                 // no need to set shop
             } else {
-                $this->tiktok->setShop();
+                $this->tiktok->checkShop();
 
-                throw_if(!$this->tiktok->getShop(), TikTokAPIError::class, __('Missing Seller ID.'));
+                throw_if(!$this->tiktok->getShop(), TikTokAPIError::class, ['code' => __('Error'), 'message' => __('Missing Seller ID.')]);
             }
-
         }
 
         // if method exists, return

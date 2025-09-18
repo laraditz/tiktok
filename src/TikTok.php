@@ -24,6 +24,16 @@ class TikTok
         private ?string $shop_code = null,
         private ?string $shop_name = null,
     ) {
+        $this->setAppKey($this->app_key ?? config('tiktok.app_key'));
+        $this->setAppSecret($this->app_secret ?? config('tiktok.app_secret'));
+        $this->setShopId($this->shop_id ?? config('tiktok.shop_id'));
+        $this->setShopCode($this->shop_code ?? config('tiktok.shop_code'));
+        $this->setShopName($this->shop_name ?? config('tiktok.shop_name'));
+    }
+
+    public static function make(...$args): static
+    {
+        return new static(...$args);
     }
 
     public function __call($method, $arguments)
@@ -41,8 +51,26 @@ class TikTok
                 throw new LogicException(__('Please pass a named arguments in :method method.', ['method' => $method]));
             }
 
+            if ($shop_id = data_get($arguments, 'shop_id')) {
+                $this->setShopId($shop_id);
+            }
+
             if ($access_token = data_get($arguments, 'access_token')) {
                 $this->setAccessToken($access_token);
+            }
+        }
+
+        if (
+            ($this->getShop() === null && $this->getShopId())
+            || ($this->getShop() && $this->getShop()?->identifier !== $this->getShopId())
+        ) {
+
+            $tikTokShop = TiktokShop::firstOrCreate(['identifier' => $this->getShopId()], []);
+            if ($tikTokShop) {
+                $this->setShop($tikTokShop);
+                $this->setShopCode($tikTokShop->code);
+                $this->setShopName($tikTokShop->name);
+                $this->setAccessToken($this->getShop()?->accessToken?->access_token);
             }
         }
 
@@ -98,14 +126,24 @@ class TikTok
         return $signature;
     }
 
-    public function getAppKey(): string
+    public function setAppKey(string $appKey): void
     {
-        return $this->app_key ?? config('tiktok.app_key');
+        $this->app_key = $appKey;
     }
 
-    public function getAppSecret(): string
+    public function getAppKey(): ?string
     {
-        return $this->app_secret ?? config('tiktok.app_secret');
+        return $this->app_key;
+    }
+
+    public function setAppSecret(string $appSecret): void
+    {
+        $this->app_secret = $appSecret;
+    }
+
+    public function getAppSecret(): ?string
+    {
+        return $this->app_secret;
     }
 
     public function getSignMethod(): string
@@ -113,22 +151,44 @@ class TikTok
         return config('tiktok.sign_method');
     }
 
+    public function setShopId(?string $shopId): void
+    {
+        $this->shop_id = $shopId;
+    }
+
+    public function shopId(?string $shopId): self
+    {
+        $this->setShopId($shopId);
+
+        return $this;
+    }
+
     public function getShopId(): ?string
     {
-        return $this->shop_id ?? config('tiktok.shop_id');
+        return $this->shop_id;
+    }
+
+    public function setShopCode(?string $shopCode): void
+    {
+        $this->shop_code = $shopCode;
     }
 
     public function getShopCode(): ?string
     {
-        return $this->shop_code ?? config('tiktok.shop_code');
+        return $this->shop_code;
+    }
+
+    public function setShopName(?string $shopName): void
+    {
+        $this->shop_name = $shopName;
     }
 
     public function getShopName(): ?string
     {
-        return $this->shop_name ?? config('tiktok.shop_name');
+        return $this->shop_name;
     }
 
-    public function setShop(): void
+    public function checkShop(): void
     {
         if ($this->getAccessToken()) {
             $accessToken = TiktokAccessToken::where('access_token', $this->getAccessToken())->first();
@@ -171,6 +231,11 @@ class TikTok
     public function getAccessToken(): ?string
     {
         return $this->access_token;
+    }
+
+    public function setShop(TiktokShop $shop): void
+    {
+        $this->shop = $shop;
     }
 
     public function getShop(): ?TiktokShop
