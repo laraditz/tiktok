@@ -7,6 +7,8 @@
 
 A comprehensive Laravel package for seamless integration with the TikTok Shop API. This package provides a clean, intuitive interface for managing TikTok shops, handling authentication, processing orders, managing products, and receiving webhooks.
 
+<a href="https://www.buymeacoffee.com/raditzfarhan" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 50px !important;width: 200px !important;" ></a>
+
 ## Features
 
 - 🔐 **Complete Authentication Flow** - Automatic token management with refresh capabilities
