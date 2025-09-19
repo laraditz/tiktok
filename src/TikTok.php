@@ -18,8 +18,8 @@ class TikTok
     private ?string $access_token = null;
 
     public function __construct(
-        private string $app_key,
-        private string $app_secret,
+        private ?string $app_key = null,
+        private ?string $app_secret = null,
         private ?string $shop_id = null,
         private ?string $shop_code = null,
         private ?string $shop_name = null,
@@ -86,7 +86,7 @@ class TikTok
 
             $service_name = 'Laraditz\\TikTok\\Services\\' . $reformat_property_name . 'Service';
 
-            return new $service_name(tiktok: app('tiktok'));
+            return new $service_name(tiktok: $this);
         } else {
             throw new BadMethodCallException(sprintf(
                 'Method %s::%s does not exist.',
