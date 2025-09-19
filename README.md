@@ -2,9 +2,21 @@
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/laraditz/tiktok.svg?style=flat-square)](https://packagist.org/packages/laraditz/tiktok)
 [![Total Downloads](https://img.shields.io/packagist/dt/laraditz/tiktok.svg?style=flat-square)](https://packagist.org/packages/laraditz/tiktok)
+[![License](https://img.shields.io/packagist/l/laraditz/tiktok.svg?style=flat-square)](./LICENSE.md)
 ![GitHub Actions](https://github.com/laraditz/tiktok/actions/workflows/main.yml/badge.svg)
 
-Laravel package for interacting with TikTok API.
+A comprehensive Laravel package for seamless integration with the TikTok Shop API. This package provides a clean, intuitive interface for managing TikTok shops, handling authentication, processing orders, managing products, and receiving webhooks.
+
+## Features
+
+- 🔐 **Complete Authentication Flow** - Automatic token management with refresh capabilities
+- 🏪 **Multi-Shop Support** - Manage multiple TikTok shops within a single application
+- 📦 **Product Management** - Full CRUD operations for TikTok Shop products
+- 🛒 **Order Processing** - Comprehensive order management and tracking
+- 🔄 **Return Handling** - Complete return and refund management
+- 📡 **Webhook Integration** - Real-time event handling with built-in webhook endpoints
+- 🗄️ **Database Logging** - Automatic request logging for debugging and monitoring
+- 🔄 **Auto Token Refresh** - Background token refresh to maintain API connectivity
 
 ## Requirements
 
@@ -19,40 +31,66 @@ You can install the package via composer:
 composer require laraditz/tiktok
 ```
 
-## Before Start
+## Quick Start
 
-Configure your variables in your `.env` (recommended) or you can publish the config file and change it there.
+### 1. TikTok Shop App Setup
 
+Before using this package, you need to create a TikTok Shop app:
+
+1. Visit [TikTok Shop Partner Center](https://partner.tiktokshop.com/)
+2. Create a new app or use an existing one
+3. Note your `App Key` and `App Secret`
+4. Configure the redirect URL: `https://your-app-url.com/tiktok/seller/authorized`
+
+### 2. Environment Configuration
+
+Add your TikTok Shop credentials to your `.env` file:
+
+```env
+TIKTOK_APP_KEY=your_app_key_here
+TIKTOK_APP_SECRET=your_app_secret_here
+TIKTOK_SHOP_ID=your_shop_id_here          # Optional: Default shop ID
+TIKTOK_SHOP_CODE=your_shop_code_here      # Optional: Default shop code
+TIKTOK_SHOP_NAME=your_shop_name_here      # Optional: Default shop name
 ```
-TIKTOK_APP_KEY=<your_tiktok_app_key>
-TIKTOK_APP_SECRET=<your_tiktok_app_secret>
-TIKTOK_SHOP_ID=<your_tiktok_shop_id>
-TIKTOK_SHOP_CODE=MYXXXXXXXX
-TIKTOK_SHOP_NAME=<your_tiktok_shop_name>
-```
 
-(Optional) You can publish the config file via this command:
+### 3. Database Setup
 
-```bash
-php artisan vendor:publish --provider="Laraditz\TikTok\TikTokServiceProvider" --tag="config"
-```
-
-Run the migration command to create the necessary database table.
+Run the migration to create required database tables:
 
 ```bash
 php artisan migrate
 ```
 
-On TikTok Shop Partner Center, configure this **Redirect URL** on your App Management section. Once seller has authorized the app, it will redirect to this URL. Under the hood, it will call API to generate access token so that you do not have to call it manually.
+This creates tables for shops, access tokens, requests, webhooks, orders, and returns.
+
+### 4. Configuration (Optional)
+
+Publish the configuration file if you need to customize settings:
+
+```bash
+php artisan vendor:publish --provider="Laraditz\TikTok\TikTokServiceProvider" --tag="config"
+```
+
+### 5. Authorization Flow
+
+To authorize a TikTok shop with your app:
+
+1. **In Partner Center**, go to `App & Service` and select your app. On the right side, you can find `Authorization` section with `Copy authorization link` button. Copy the URL and paste in into your browser address. The URL look like this:
 
 ```
-// App Callback URL
-https://your-app-url.com/tiktok/seller/authorized
+ https://services.tiktokshop.com/open/authorize?service_id=720850956892765XXXXX
 ```
+
+2. **Login using the seller account** that you want to authorized to be use for the app.
+
+3. **TikTok redirects back** to `https://your-app-url.com/tiktok/seller/authorized`
+4. **Package automatically handles** the authorization code exchange and token storage
+5. **Shop is now ready** for API calls
 
 ## Available Methods
 
-Below are all methods available under this package. Parameters for all method calls will follow exactly as in [TikTok Shop API Documentation](https://partner.tiktokshop.com/docv2/page/6789f6f818828103147a8b05). `app_key`, `sign`, `timestamp`, `shop_cipher` are common parameters and will be append automatically when required.
+Here’s the full list of methods available in this package. Each method uses the same parameters defined in the [TikTok Shop API Documentation](https://partner.tiktokshop.com/docv2/page/6789f6f818828103147a8b05). You don’t need to worry about adding common parameters like `app_key`, `sign`, `timestamp`, or `shop_cipher` because they’ll be automatically included whenever required.
 
 ### Authentication Service `auth()`
 
@@ -111,98 +149,362 @@ Full parameters refer to [API documentation](https://partner.tiktokshop.com/docv
 | `list()` | Use this API to retrieve one or more returns. | query: `page_size`, `page_token` and more |
 | `get()`  | Use this API to get a list of return records. | params: `return_id`                       |
 
-## Usage
+## Usage Examples
+
+### Basic Usage
 
 ```php
+use Laraditz\TikTok\Facades\TikTok;
+
+// Using facade (recommended)
+$shops = TikTok::seller()->shops();
+
 // Using service container
 $seller = app('tiktok')->seller()->shops();
+```
 
-// Using facade
-$products = \TikTok::product()->list(
+### Working with Products
+
+```php
+// Get all products
+$products = TikTok::product()->list(
     query: [
-        'page_size' => 10
+        'page_size' => 20
     ],
     body: [
-        'status' => 'ALL'
+        'status' => 'ALL',
+        'update_time_ge' => 1758211200  // Unix timestamp
     ]
 );
 
-// Pass path variables to params
-// e.g. path: /return_refund/202309/returns/{return_id}/records
-$returnOrders = TikTok::return()->get(
+// Get specific product
+$product = TikTok::product()->get(
     params: [
-        'return_id' => '1681299342034327'
-    ],
+        'product_id' => 'your_product_id'
+    ]
 );
 ```
 
-## Event
+### Order Management
 
-This package also provide an event to allow your application to listen for TikTok webhook. You can create your listener and register it under event below.
+```php
+// Search orders
+$orders = TikTok::order()->list(
+    query: [
+        'page_size' => 50
+    ],
+    body: [
+        'order_status' => 'UNPAID',
+        'create_time_ge' => 1758211200,
+        'create_time_lt' => 1758297600
+    ]
+);
 
-| Event                                      | Description                                  |
-| ------------------------------------------ | -------------------------------------------- |
-| Laraditz\TikTok\Events\WebhookReceived     | Receive a push content from TikTok.          |
-| Laraditz\TikTok\Events\TikTokRequestFailed | Trigger when a request to TikTok API failed. |
+// Get order details
+$orderDetails = TikTok::order()->detail(
+    query: [
+        'ids' => 'order_id_1,order_id_2'
+    ]
+);
 
-Read more about TikTok Webhooks [here](https://partner.tiktokshop.com/docv2/page/64f1997e93f5dc028e357341).
+// Get order pricing details
+$pricing = TikTok::order()->priceDetail(
+    params: [
+        'order_id' => 'your_order_id'
+    ]
+);
+```
 
-## Webhook URL
+### Return Order
 
-You may setup the Callback URL below on TikTok Shop API dashboard, under the Manage App section so that TikTok will push all content update to this url and trigger the `WebhookReceived` event above.
+```php
+// Get returns
+$returns = TikTok::return()->list(
+    query: [
+        'page_size' => 20
+    ],
+    body: [
+        'create_time_ge' => 1758211200
+    ]
+);
+
+// Get specific return records
+$returnRecords = TikTok::return()->get(
+    params: [
+        'return_id' => '168129934203XXXX' // A unique identifier for a TikTok Shop return request.
+    ]
+);
+```
+
+### Multi-Shop Support
+
+By default, the package uses `TIKTOK_SHOP_ID` from your `.env` file. For multi-shop applications, specify the shop ID per request:
+
+```php
+// Method 1: Using make() with shop_id
+$products = TikTok::make(shop_id: '7010123456556XXXXXX')
+    ->product()
+    ->list(
+        query: ['page_size' => 10],
+        body: ['status' => 'ACTIVATE']
+    );
+
+// Method 2: Using shopId() method
+$orders = TikTok::shopId('7010123456556XXXXXX')
+    ->order()
+    ->list(
+        query: ['page_size' => 50],
+        body: ['order_status' => 'UNPAID', 'create_time_ge' => 1758211200]
+    );
+
+// You also can set shop context and reuse
+$tiktok = TikTok::make(shop_id: '7010123456556XXXXXX');
+$products = $tiktok->product()->list(/* ... */);
+$orders = $tiktok->order()->list(/* ... */);
+```
+
+### Error Handling
+
+```php
+use Laraditz\TikTok\Exceptions\TikTokAPIError;
+
+try {
+    $products = TikTok::product()->list(
+        query: ['page_size' => 10],
+        body: ['status' => 'ALL']
+    );
+
+    // Handle successful response
+    $data = $products['data'];
+
+} catch (TikTokAPIError $e) {
+    // Handle API errors
+    $errorCode = $e->getCode();
+    $errorMessage = $e->getMessage();
+    $errorData = $e->getData();
+
+    logger()->error('TikTok API Error', [
+        'code' => $errorCode,
+        'message' => $errorMessage,
+        'data' => $errorData
+    ]);
+}
+```
+
+## Events & Webhooks
+
+### Available Events
+
+This package provides events that you can listen to in your application:
+
+| Event                                        | Description                              | Payload                        |
+| -------------------------------------------- | ---------------------------------------- | ------------------------------ |
+| `Laraditz\TikTok\Events\WebhookReceived`     | Triggered when TikTok sends webhook data | Webhook payload data           |
+| `Laraditz\TikTok\Events\TikTokRequestFailed` | Triggered when API request fails         | Error details and request info |
+
+### Creating Event Listeners
+
+Create listeners for these events in your application:
+
+```php
+// app/Listeners/TikTokWebhookListener.php
+<?php
+
+namespace App\Listeners;
+
+use Laraditz\TikTok\Events\WebhookReceived;
+
+class TikTokWebhookListener
+{
+    public function handle(WebhookReceived $event)
+    {
+        $eventType = $event->eventType;
+        $data = $event->data;
+
+        match ($eventType) {
+            'ORDER_STATUS_CHANGE' => $this->handleOrderStatusChange($eventType, $data),
+            'RETURN_STATUS_CHANGE' => $this->handleReturnStatusChange($eventType, $data),
+            // Handle other event types
+        }
+    }
+
+    private function handleOrderStatusChange(string $eventType, array $data)
+    {
+        // Your order status change logic here
+    }
+
+    private function handleReturnStatusChange(string $eventType, array $data)
+    {
+        // Your return order logic here
+    }
+}
+```
+
+Register the listener in your `EventServiceProvider` (Laravel 10 and below):
+
+```php
+// app/Providers/EventServiceProvider.php
+protected $listen = [
+    \Laraditz\TikTok\Events\WebhookReceived::class => [
+        \App\Listeners\TikTokWebhookListener::class,
+    ],
+    \Laraditz\TikTok\Events\TikTokRequestFailed::class => [
+        \App\Listeners\TikTokRequestFailedListener::class,
+    ],
+];
+```
+
+### Webhook Configuration
+
+#### 1. Universal Webhook Endpoint
+
+Configure this URL in your TikTok Shop App Management section under `Manage Webhook` to receive all webhook events:
 
 ```
 https://your-app-url.com/tiktok/webhooks/all
 ```
 
-You can also register individual webhook for specific event like so:-
+#### 2. Event-Specific Webhooks
+
+You can also register individual webhooks for specific events:
 
 ```php
-$webhooks = TikTok::event()->updateWebhook(
-    shop_cipher: true,
+// Register webhook for order status changes
+TikTok::event()->updateWebhook(
     body: [
         'event_type' => 'ORDER_STATUS_CHANGE',
-        'address' => 'https://your-app-url.com/tiktok/webhooks/order-status-change',
+        'address' => 'https://your-app-url.com/webhooks/order-status',
+    ]
+);
+
+// Register webhook for product updates
+TikTok::event()->updateWebhook(
+    body: [
+        'event_type' => 'PRODUCT_UPDATE',
+        'address' => 'https://your-app-url.com/webhooks/product-update',
     ]
 );
 ```
 
-## Commands
+#### 3. Managing Webhooks
 
-```bash
-tiktok:flush-expired-token    Flush expired access token.
-tiktok:refresh-token          Refresh existing access token before it expired.
+```php
+// List all registered webhooks
+$webhooks = TikTok::event()->webhookList();
+
+// Delete a specific webhook
+TikTok::event()->deleteWebhook(
+    body: [
+        'event_type' => 'ORDER_STATUS_CHANGE'
+    ]
+);
 ```
 
-As TikTok access token has an expired date, you may want to set `tiktok:refresh-token` on scheduler and run it before it expires to refresh the access token. Otherwise, you need the seller to reauthorize and generate a new access token.
+Read more about TikTok Webhooks in the [official documentation](https://partner.tiktokshop.com/docv2/page/64f1997e93f5dc028e357341) and [webhook section](https://partner.tiktokshop.com/docv2/page/17-shoppable-content-posting).
 
-#### Token Duration
+## Token Management
 
-- Access token: 7 days
-- Refresh token: +-2 months
+### Artisan Commands
 
-### Testing
+The package provides Artisan commands for token management:
+
+```bash
+# Refresh access tokens before they expire
+php artisan tiktok:refresh-token
+
+# Remove expired tokens from database
+php artisan tiktok:flush-expired-token
+```
+
+### Automated Token Refresh
+
+Set up automatic token refresh in your `app/Console/Kernel.php`:
+
+```php
+protected function schedule(Schedule $schedule)
+{
+    // Refresh tokens daily (tokens expire in 7 days)
+    $schedule->command('tiktok:refresh-token')
+             ->daily()
+             ->withoutOverlapping()
+             ->onFailure(function () {
+                 // Log failures or send notifications
+             });
+
+    // Clean up expired tokens weekly
+    $schedule->command('tiktok:flush-expired-token')
+             ->weekly();
+}
+```
+
+### Token Lifecycle
+
+Understanding TikTok token duration:
+
+| Token Type        | Duration  | Notes                         |
+| ----------------- | --------- | ----------------------------- |
+| **Access Token**  | 7 days    | Used for API calls            |
+| **Refresh Token** | ~2 months | Used to refresh access tokens |
+
+**Important:** If tokens expire and refresh fails, sellers must re-authorize your app.
+
+## Testing
+
+### Running Tests
 
 ```bash
 composer test
 ```
 
-### Changelog
+### Debug Mode
 
-Please see [CHANGELOG](CHANGELOG.md) for more information what has changed recently.
+Enable debug logging by listening to the `TikTokRequestFailed` event:
+
+```php
+// In your EventServiceProvider
+use Laraditz\TikTok\Events\TikTokRequestFailed;
+
+protected $listen = [
+    TikTokRequestFailed::class => [
+        function (TikTokRequestFailed $event) {
+            logger()->error('TikTok API Request Failed', [
+                'method' => $event->fqcn . '::' . $event->methodName,
+                'query' => $event->query,
+                'body' => $event->body,
+                'message' => $event->message,
+            ]);
+        }
+    ],
+];
+```
+
+## Changelog
+
+Please see [CHANGELOG](CHANGELOG.md) for more information about recent changes.
 
 ## Contributing
 
-Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
+We welcome contributions! Please see [CONTRIBUTING](CONTRIBUTING.md) for guidelines on:
 
-### Security
+- Reporting bugs
+- Suggesting enhancements
+- Submitting pull requests
+- Code style standards
 
-If you discover any security related issues, please email raditzfarhan@gmail.com instead of using the issue tracker.
+## Security
+
+If you discover any security vulnerabilities, please email [raditzfarhan@gmail.com](mailto:raditzfarhan@gmail.com) instead of using the issue tracker. All security vulnerabilities will be promptly addressed.
+
+## Support
+
+- 📖 [TikTok Shop API Documentation](https://partner.tiktokshop.com/docv2/)
+- 🐛 [Issue Tracker](https://github.com/laraditz/tiktok/issues)
+- 💬 [Discussions](https://github.com/laraditz/tiktok/discussions)
 
 ## Credits
 
-- [Raditz Farhan](https://github.com/laraditz)
-- [All Contributors](../../contributors)
+- [Raditz Farhan](https://github.com/laraditz) - Creator and maintainer
+- [All Contributors](../../contributors) - Thank you for your contributions!
 
 ## License
 
