@@ -76,7 +76,7 @@ php artisan vendor:publish --provider="Laraditz\TikTok\TikTokServiceProvider" --
 
 To authorize a TikTok shop with your app:
 
-1. **In Partner Center**, go to `App & Service` and select your app. On the right side, you can find `Authorization` section with `Copy authorization link` button. Copy the URL and paste in into your browser address. The URL look like this:
+1. **In Partner Center**, go to `App & Service` and select your app. On the right side, you can find `Authorization` section with `Copy authorization link` button. Copy the URL and paste it into your browser address. The URL look like this:
 
 ```
  https://services.tiktokshop.com/open/authorize?service_id=720850956892765XXXXX
@@ -297,10 +297,10 @@ try {
 
 This package provides events that you can listen to in your application:
 
-| Event                                        | Description                              | Payload                        |
-| -------------------------------------------- | ---------------------------------------- | ------------------------------ |
-| `Laraditz\TikTok\Events\WebhookReceived`     | Triggered when TikTok sends webhook data | Webhook payload data           |
-| `Laraditz\TikTok\Events\TikTokRequestFailed` | Triggered when API request fails         | Error details and request info |
+| Event                                        | Description                              |
+| -------------------------------------------- | ---------------------------------------- |
+| `Laraditz\TikTok\Events\WebhookReceived`     | Triggered when TikTok sends webhook data |
+| `Laraditz\TikTok\Events\TikTokRequestFailed` | Triggered when API request fails         |
 
 ### Creating Event Listeners
 
