@@ -9,7 +9,7 @@ class TiktokRequest extends Model
 {
     use HasUlids;
 
-    protected $fillable = ['action', 'url', 'request', 'request_id', 'code', 'message', 'response', 'error'];
+    protected $fillable = ['shop_id', 'action', 'url', 'request', 'request_id', 'code', 'message', 'response', 'error'];
 
     protected function casts(): array
     {

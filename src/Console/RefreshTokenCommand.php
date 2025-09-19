@@ -33,7 +33,7 @@ class RefreshTokenCommand extends Command
         $query->lazy()->each(function ($item) {
             $this->info(__('<fg=yellow>Refreshing :subjectable access token.</>', ['subjectable' => $item->subjectable?->name ?? '']));
             try {
-                TikTok::auth()->refreshToken();
+                TikTok::auth()->refreshAccessToken($item);
 
                 $this->info(__(':subjectable access token was refresh.', ['subjectable' => $item->subjectable?->name ?? 'The']));
             } catch (TikTokAPIError $th) {

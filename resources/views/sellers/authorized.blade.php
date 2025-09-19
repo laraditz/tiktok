@@ -1,7 +1,7 @@
 <div class="container">
     <div class="box">
         <h2>{{ __('TikTok Seller Authorized!') }}</h2>
-        @if($shop->accessToken)
+        @if($shop?->accessToken)
         <p>{{ __('Access token has been generated. You may now proceed to call any supported TikTok API using this SDK.') }}</p>
         @endif
         <ul>
@@ -12,7 +12,7 @@
                 @endif
                 <li><strong>{{ __('Shop ID') }}</strong>: {{ $shop->identifier }}</li>
                 <li><strong>{{ __('Shop code') }}</strong>: {{ $shop->code }}</li>
-                @if($shop->accessToken)
+                @if($shop?->accessToken)
                     <li><strong>{{ __('Access token') }}</strong>: {{ $shop->accessToken->access_token }} </li>
                     <li><strong>{{ __('Access token expires at') }}</strong>: {{ $shop->accessToken->expires_at?->toDateTimeString() }} </li>
                     <li><strong>{{ __('Refresh Token') }}</strong>: {{ $shop->accessToken->refresh_token }}</li>

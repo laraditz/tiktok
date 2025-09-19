@@ -15,10 +15,10 @@ use Laraditz\TikTok\Events\TikTokRequestFailed;
 
 class BaseService
 {
-    public string $methodName;
+    public ?string $methodName = null;
 
-    public string $serviceName;
-    public string $fqcn;
+    public ?string $serviceName = null;
+    public ?string $fqcn = null;
 
     public function __construct(
         public TikTok $tiktok,
@@ -36,12 +36,12 @@ class BaseService
         $oClass = new \ReflectionClass(get_called_class());
         $fqcn = $oClass->getName();
         $this->fqcn = $fqcn;
-        $this->serviceName = $oClass->getShortName();
-        $this->methodName = $methodName;
+        $this->setServiceName($oClass->getShortName());
+        $this->setMethodName($methodName);
 
         if (!$this->tiktok->getShop()) {
 
-            if ($this->serviceName === 'AuthService' && $this->methodName === 'accessToken') {
+            if ($this->getServiceName() === 'AuthService' && $this->getMethodName() === 'accessToken') {
                 // no need to set shop
             } else {
                 $this->tiktok->checkShop();
@@ -123,8 +123,19 @@ class BaseService
         $this->setRoute($route_path);
     }
 
-    protected function execute()
+    protected function execute(): mixed
     {
+        $oClass = new \ReflectionClass(get_called_class());
+        if (!$this->getServiceName()) {
+            $service_name = $oClass->getShortName();
+            $this->setServiceName($service_name);
+        }
+
+        if (!$this->getMethodName()) {
+            $called_method = $this->getCalledMethod();
+            $this->setMethodName($called_method);
+        }
+
         $method = $this->getMethod();
         $url = $this->getUrl();
 
@@ -164,7 +175,8 @@ class BaseService
         $payload = $this->getPayload();
 
         $request = TiktokRequest::create([
-            'action' => $this->serviceName . '::' . $this->methodName,
+            'shop_id' => $this->tiktok->getShopId(),
+            'action' => $this->getServiceName() . '::' . $this->getMethodName(),
             'url' => $url,
             'request' => $payload && count($payload) > 0 ? $payload : null,
         ]);
@@ -230,7 +242,7 @@ class BaseService
     {
         event(new TikTokRequestFailed(
             fqcn: $this->fqcn,
-            methodName: $this->methodName,
+            methodName: $this->getMethodName(),
             query: $this->getQueryString(),
             body: $this->getPayload(),
             message: $message
@@ -239,7 +251,7 @@ class BaseService
 
     private function requireSignature(): bool
     {
-        if ($this->serviceName === 'AuthService') {
+        if ($this->getServiceName() === 'AuthService') {
             return false;
         }
 
@@ -248,7 +260,7 @@ class BaseService
 
     private function beforeRequest(): void
     {
-        $methodName = 'before' . Str::studly($this->methodName) . 'Request';
+        $methodName = 'before' . Str::studly($this->getMethodName()) . 'Request';
 
         if (method_exists($this, $methodName)) {
             $this->$methodName();
@@ -257,7 +269,7 @@ class BaseService
 
     private function afterRequest(TiktokRequest $request, array $result = []): void
     {
-        $methodName = 'after' . Str::studly($this->methodName) . 'Request';
+        $methodName = 'after' . Str::studly($this->getMethodName()) . 'Request';
 
         if (method_exists($this, $methodName)) {
             $this->$methodName($request, $result);
@@ -272,7 +284,7 @@ class BaseService
 
         $accessToken = $this->tiktok->getAccessToken();
 
-        if ($this->serviceName === 'AuthService') {
+        if ($this->getServiceName() === 'AuthService') {
             // no need access token for this service and method
         } elseif ($accessToken) {
             $headers['x-tts-access-token'] = $accessToken;
@@ -298,7 +310,7 @@ class BaseService
 
     protected function getAllowedMethods(): array
     {
-        $route_prefix = str($this->serviceName)->remove('Service')->lower()->value;
+        $route_prefix = str($this->getServiceName())->remove('Service')->lower()->value;
 
         return array_keys(config('tiktok.routes.' . $route_prefix) ?? []);
     }
@@ -307,7 +319,7 @@ class BaseService
     {
         if (
             $this instanceof \Laraditz\TikTok\Services\AuthService
-            && in_array($this->methodName, ['accessToken', 'refreshToken'])
+            && in_array($this->getMethodName(), ['accessToken', 'refreshToken', 'refreshAccessToken'])
         ) {
             $base_url = config('tiktok.auth_url');
         } else {
@@ -322,6 +334,13 @@ class BaseService
     protected function route(string $route): self
     {
         $this->setRoute($route);
+
+        return $this;
+    }
+
+    protected function routeName(string $routeName): self
+    {
+        $this->setRoute($this->tiktok->getRoutePath($routeName));
 
         return $this;
     }
@@ -353,6 +372,26 @@ class BaseService
     protected function getMethod(): string
     {
         return $this->method;
+    }
+
+    protected function setMethodName(string $methodName): void
+    {
+        $this->methodName = $methodName;
+    }
+
+    protected function getMethodName(): ?string
+    {
+        return $this->methodName;
+    }
+
+    protected function setServiceName(string $serviceName): void
+    {
+        $this->serviceName = $serviceName;
+    }
+
+    protected function getServiceName(): ?string
+    {
+        return $this->serviceName;
     }
 
     public function payload(array $payload): self
@@ -397,6 +436,14 @@ class BaseService
     protected function getParams(): null|array|string|int
     {
         return $this->params;
+    }
+
+    public function getCalledMethod()
+    {
+        $e = new \Exception();
+        $trace = $e->getTrace();
+        //position 0 would be the line that called this function so we ignore it
+        return data_get($trace, '2.function');
     }
 
 }

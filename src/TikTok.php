@@ -62,15 +62,20 @@ class TikTok
 
         if (
             ($this->getShop() === null && $this->getShopId())
-            || ($this->getShop() && $this->getShop()?->identifier !== $this->getShopId())
+            || ($this->getShop() && $this->getShop()?->identifier && $this->getShop()?->identifier !== $this->getShopId())
         ) {
 
-            $tikTokShop = TiktokShop::firstOrCreate(['identifier' => $this->getShopId()], []);
+            // $tikTokShop = TiktokShop::firstOrCreate(['identifier' => $this->getShopId()], []);
+            $tikTokShop = TiktokShop::where('identifier', $this->getShopId())->first();
+
             if ($tikTokShop) {
                 $this->setShop($tikTokShop);
+                $this->setShopId($tikTokShop->identifier);
                 $this->setShopCode($tikTokShop->code);
                 $this->setShopName($tikTokShop->name);
-                $this->setAccessToken($this->getShop()?->accessToken?->access_token);
+                if ($this->getShop()?->accessToken?->access_token) {
+                    $this->setAccessToken($this->getShop()?->accessToken->access_token);
+                }
             }
         }
 
@@ -218,7 +223,12 @@ class TikTok
             }
 
             if ($this->shop) {
-                $this->setAccessToken($this->shop->accessToken?->access_token);
+                $this->setShopId($this->shop->identifier);
+                $this->setShopCode($this->shop->code);
+                $this->setShopName($this->shop->name);
+                if ($this->shop?->accessToken) {
+                    $this->setAccessToken($this->shop->accessToken?->access_token);
+                }
             }
         }
     }
@@ -246,5 +256,10 @@ class TikTok
     public function getShopCipher(): ?string
     {
         return $this->getShop()?->cipher;
+    }
+
+    public function getRoutePath(string $route): ?string
+    {
+        return $route = config('tiktok.routes.' . $route);
     }
 }

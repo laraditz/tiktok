@@ -27,6 +27,10 @@ class SellerController extends Controller
                 ]
             );
 
+            $access_token = data_get($accessToken, 'data.access_token');
+
+            $authorizedShops = TikTok::authorization(access_token: $access_token)->shops();
+
             $shop = TikTok::getShop();
 
             return view('tiktok::sellers.authorized', [
