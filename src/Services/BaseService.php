@@ -301,7 +301,11 @@ class BaseService
             // 'sign_method' => $this->tiktok->getSignMethod(),
         ];
 
-        if ($this->shopCipher === true) {
+        if (in_array($this->getServiceName(), ['AuthService', 'AuthorizationService', 'SellerService'])) {
+            // no need shop cipher
+        } elseif ($this->shopCipher === true) {
+            $params['shop_cipher'] = $this->tiktok->getShopCipher();
+        } else {
             $params['shop_cipher'] = $this->tiktok->getShopCipher();
         }
 

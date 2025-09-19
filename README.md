@@ -52,24 +52,64 @@ https://your-app-url.com/tiktok/seller/authorized
 
 ## Available Methods
 
-Below are all methods available under this package. Parameters for all method calls will follow exactly as in [TikTok Shop API Documentation](https://partner.tiktokshop.com/docv2/page/6789f6f818828103147a8b05).
+Below are all methods available under this package. Parameters for all method calls will follow exactly as in [TikTok Shop API Documentation](https://partner.tiktokshop.com/docv2/page/6789f6f818828103147a8b05). `app_key`, `sign`, `timestamp`, `shop_cipher` are common parameters and will be append automatically when required.
 
-| Service name    | Method name     | Description                                                                                                |
-| --------------- | --------------- | ---------------------------------------------------------------------------------------------------------- |
-| auth()          | accessToken()   | Generate access token for API call.                                                                        |
-|                 | refreshToken()  | Refresh access token before it expired.                                                                    |
-| authorization() | shops()         | etrieves the list of shops that a seller has authorized for an app.                                        |
-| event()         | webhookList()   | Retrieves a shop's webhooks and the corresponding webhook URLs.                                            |
-|                 | updateWebhook() | Updates the shop's webhook URL for a specific event topic.                                                 |
-|                 | deleteWebhook() | Deletes the shop's webhook URL for a specific event topic.                                                 |
-| seller()        | shops()         | Retrieves all active shops that belong to a seller.                                                        |
-| order()         | list()          | Returns a list of orders created or updated during the timeframe indicated by the specified parameters.    |
-|                 | detail()        | Get the detailed order information of an order.                                                            |
-|                 | priceDetail()   | Get the detailed pricing calculation information of an order or a line item, including vouchers, tax, etc. |
-| product()       | get()           | Retrieve all properties of a product that is in the DRAFT, PENDING, or ACTIVATE status.                    |
-|                 | list()          | Retrieve a list of products that meet the specified conditions.                                            |
-| return()        | get()           | Use this API to get a list of return records.                                                              |
-|                 | list()          | Use this API to retrieve one or more returns.                                                              |
+### Authentication Service `auth()`
+
+| Method                 | Description                                   | Parameters                                                |
+| ---------------------- | --------------------------------------------- | --------------------------------------------------------- |
+| `accessToken()`        | Generate access token from authorization code | query: `app_key`, `app_secret`, `auth_code`, `grant_type` |
+| `refreshAccessToken()` | Refresh access token before it expired.       | TiktokAccessToken `tiktokAccessToken`                     |
+
+### Authorization Service `authorization()`
+
+| Method    | Description                                                          |
+| --------- | -------------------------------------------------------------------- |
+| `shops()` | Retrieves the list of shops that a seller has authorized for an app. |
+
+### Event Service `event()`
+
+| Method            | Description                                                     | Parameters                    |
+| ----------------- | --------------------------------------------------------------- | ----------------------------- |
+| `webhookList()`   | Retrieves a shop's webhooks and the corresponding webhook URLs. |                               |
+| `updateWebhook()` | Updates the shop's webhook URL for a specific event topic.      | body: `event_type`, `address` |
+| `deleteWebhook()` | Deletes the shop's webhook URL for a specific event topic.      | body: `event_type`            |
+
+### Seller Service `seller()`
+
+| Method    | Description                                         |
+| --------- | --------------------------------------------------- |
+| `shops()` | Retrieves all active shops that belong to a seller. |
+
+### Order Service `order()`
+
+Full parameters refer to [API documentation](https://partner.tiktokshop.com/docv2/page/order-api-overview)
+
+| Method          | Description                                                                                                | Parameters                    |
+| --------------- | ---------------------------------------------------------------------------------------------------------- | ----------------------------- |
+| `list()`        | Returns a list of orders created or updated during the timeframe indicated by the specified parameters.    | query: `page_size` and more   |
+|                 |                                                                                                            | body: `order_status` and more |
+| `detail()`      | Get the detailed order information of an order.                                                            | query: `ids`                  |
+| `priceDetail()` | Get the detailed pricing calculation information of an order or a line item, including vouchers, tax, etc. | params: `order_id`            |
+
+### Product Service `product()`
+
+Full parameters refer to [API documentation](https://partner.tiktokshop.com/docv2/page/products-api-overview)
+
+| Method   | Description                                                                             | Parameters                                |
+| -------- | --------------------------------------------------------------------------------------- | ----------------------------------------- |
+| `list()` | Retrieve a list of products that meet the specified conditions.                         | query: `page_size`, `page_token`          |
+|          |                                                                                         | body: `status`, `update_time_ge` and more |
+| `get()`  | Retrieve all properties of a product that is in the DRAFT, PENDING, or ACTIVATE status. | params: `product_id`                      |
+
+### Return Service `return()`
+
+Full parameters refer to [API documentation](https://partner.tiktokshop.com/docv2/page/return-refund-and-cancel-api-overview)
+
+| Method   | Description                                   | Parameters                                |
+| -------- | --------------------------------------------- | ----------------------------------------- |
+| `list()` | Use this API to retrieve one or more returns. | query: `page_size`, `page_token` and more |
+| `get()`  | Use this API to get a list of return records. | params: `return_id`                       |
 
 ## Usage
 
@@ -79,7 +119,6 @@ $seller = app('tiktok')->seller()->shops();
 
 // Using facade
 $products = \TikTok::product()->list(
-    shop_cipher: true, // set to true if request require shop_cipher
     query: [
         'page_size' => 10
     ],
@@ -91,7 +130,6 @@ $products = \TikTok::product()->list(
 // Pass path variables to params
 // e.g. path: /return_refund/202309/returns/{return_id}/records
 $returnOrders = TikTok::return()->get(
-    shop_cipher: true,
     params: [
         'return_id' => '1681299342034327'
     ],
