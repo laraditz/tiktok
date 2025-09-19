@@ -233,7 +233,7 @@ class TikTok
         }
     }
 
-    protected function setAccessToken(string $accessToken): void
+    public function setAccessToken(string $accessToken): void
     {
         $this->access_token = $accessToken;
     }
