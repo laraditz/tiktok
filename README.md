@@ -375,7 +375,7 @@ You can also register individual webhooks for specific events:
 TikTok::event()->updateWebhook(
     body: [
         'event_type' => 'ORDER_STATUS_CHANGE',
-        'address' => 'https://your-app-url.com/webhooks/order-status',
+        'address' => 'https://your-app-url.com/tiktok/webhooks/order-status',
     ]
 );
 
@@ -383,7 +383,7 @@ TikTok::event()->updateWebhook(
 TikTok::event()->updateWebhook(
     body: [
         'event_type' => 'PRODUCT_UPDATE',
-        'address' => 'https://your-app-url.com/webhooks/product-update',
+        'address' => 'https://your-app-url.com/tiktok/webhooks/product-update',
     ]
 );
 ```
