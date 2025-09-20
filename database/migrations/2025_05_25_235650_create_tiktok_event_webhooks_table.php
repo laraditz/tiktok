@@ -11,15 +11,17 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('tiktok_event_webhooks', function (Blueprint $table) {
-            $table->id();
-            $table->foreignIdFor(TiktokShop::class, 'shop_id');
-            $table->string('event_type', 100);
-            $table->string('address')->nullable();
-            $table->timestamps();
+        if (!Schema::hasTable('tiktok_event_webhooks')) {
+            Schema::create('tiktok_event_webhooks', function (Blueprint $table) {
+                $table->id();
+                $table->foreignIdFor(TiktokShop::class, 'shop_id');
+                $table->string('event_type', 100);
+                $table->string('address')->nullable();
+                $table->timestamps();
 
-            $table->foreign('shop_id')->references('id')->on('tiktok_shops');
-        });
+                $table->foreign('shop_id')->references('id')->on('tiktok_shops');
+            });
+        }
     }
 
     /**

@@ -10,17 +10,20 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('tiktok_shops', function (Blueprint $table) {
-            $table->id();
-            $table->string('identifier', 80)->nullable();
-            $table->string('code', 20)->nullable();
-            $table->string('name')->nullable();
-            $table->string('region', 10)->nullable();
-            $table->string('seller_type', 50)->nullable();
-            $table->string('cipher')->nullable();
-            $table->string('open_id')->nullable();
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('tiktok_shops')) {
+            Schema::create('tiktok_shops', function (Blueprint $table) {
+                $table->id();
+                $table->string('identifier', 80)->nullable();
+                $table->string('code', 20)->nullable();
+                $table->string('name')->nullable();
+                $table->string('region', 10)->nullable();
+                $table->string('seller_type', 50)->nullable();
+                $table->string('cipher')->nullable();
+                $table->string('open_id')->nullable();
+                $table->timestamps();
+            });
+        }
+
     }
 
     /**
@@ -28,6 +31,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('tiktok_sellers');
+        Schema::dropIfExists('tiktok_shops');
     }
 };
