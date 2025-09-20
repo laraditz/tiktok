@@ -25,7 +25,7 @@ class MultiShopSupportTest extends TestCase
             'code' => 'SHOP001',
             'name' => 'Shop One',
             'cipher' => 'shop_1_cipher',
-            'region' => 'US',
+            'region' => 'MY',
             'seller_type' => 'shop1_seller',
         ]);
 
@@ -149,7 +149,7 @@ class MultiShopSupportTest extends TestCase
 
         Http::assertSent(function ($request) {
             return str_contains($request->url(), 'shop_cipher=shop_2_cipher') &&
-                   in_array('shop_2_access_token', $request->headers()['x-tts-access-token'] ?? []);
+                in_array('shop_2_access_token', $request->headers()['x-tts-access-token'] ?? []);
         });
     }
 
@@ -177,7 +177,7 @@ class MultiShopSupportTest extends TestCase
 
         Http::assertSent(function ($request) {
             return str_contains($request->url(), 'shop_cipher=shop_2_cipher') &&
-                   in_array('shop_2_access_token', $request->headers()['x-tts-access-token'] ?? []);
+                in_array('shop_2_access_token', $request->headers()['x-tts-access-token'] ?? []);
         });
     }
 

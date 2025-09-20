@@ -15,7 +15,7 @@ class TiktokShopTest extends TestCase
             'code' => 'SHOP123',
             'name' => 'Test Shop',
             'cipher' => 'cipher_123',
-            'region' => 'US',
+            'region' => 'MY',
             'seller_type' => 'test_seller',
         ]);
 
@@ -24,7 +24,7 @@ class TiktokShopTest extends TestCase
         $this->assertEquals('SHOP123', $shop->code);
         $this->assertEquals('Test Shop', $shop->name);
         $this->assertEquals('cipher_123', $shop->cipher);
-        $this->assertEquals('US', $shop->region);
+        $this->assertEquals('MY', $shop->region);
         $this->assertEquals('test_seller', $shop->seller_type);
     }
 

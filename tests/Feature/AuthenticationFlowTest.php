@@ -32,7 +32,7 @@ class AuthenticationFlowTest extends TestCase
                     'refresh_token_expire_in' => now()->addDays(60)->timestamp,
                     'open_id' => 'test_open_id',
                     'seller_name' => 'Test Seller',
-                    'seller_base_region' => 'US',
+                    'seller_base_region' => 'MY',
                     'user_type' => 1,
                     'granted_scopes' => ['authorization']
                 ]
