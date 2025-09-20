@@ -144,11 +144,13 @@ Full parameters refer to [API documentation](https://partner.tiktokshop.com/docv
 
 Full parameters refer to [API documentation](https://partner.tiktokshop.com/docv2/page/products-api-overview)
 
-| Method   | Description                                                                             | Parameters                                |
-| -------- | --------------------------------------------------------------------------------------- | ----------------------------------------- |
-| `list()` | Retrieve a list of products that meet the specified conditions.                         | query: `page_size`, `page_token`          |
-|          |                                                                                         | body: `status`, `update_time_ge` and more |
-| `get()`  | Retrieve all properties of a product that is in the DRAFT, PENDING, or ACTIVATE status. | params: `product_id`                      |
+| Method              | Description                                                                             | Parameters                                |
+| ------------------- | --------------------------------------------------------------------------------------- | ----------------------------------------- |
+| `list()`            | Retrieve a list of products that meet the specified conditions.                         | query: `page_size`, `page_token`          |
+|                     |                                                                                         | body: `status`, `update_time_ge` and more |
+| `get()`             | Retrieve all properties of a product that is in the DRAFT, PENDING, or ACTIVATE status. | params: `product_id`                      |
+| `updateInventory()` | Retrieve all properties of a product that is in the DRAFT, PENDING, or ACTIVATE status. | params: `product_id`                      |
+|                     |                                                                                         | body: `skus`                              |
 
 ### Return Service `return()`
 
@@ -192,6 +194,26 @@ $product = TikTok::product()->get(
     params: [
         'product_id' => 'your_product_id'
     ]
+);
+
+// Update SKU quantity of a product
+$updateInventory = TikTok::product()->updateInventory(
+    params: [
+        'product_id' => 'your_product_id'
+    ],
+    body: [
+        'skus' => [
+            [
+                'id' => 'your_product_sku_id',
+                'inventory' => [
+                    [
+                        'warehouse_id' => 'your_warehouse_id',
+                        'quantity' => 17,
+                    ]
+                ]
+            ]
+        ]
+    ],
 );
 ```
 
