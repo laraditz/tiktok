@@ -2,7 +2,7 @@
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/laraditz/tiktok.svg?style=flat-square)](https://packagist.org/packages/laraditz/tiktok)
 [![Total Downloads](https://img.shields.io/packagist/dt/laraditz/tiktok.svg?style=flat-square)](https://packagist.org/packages/laraditz/tiktok)
-[![License](https://img.shields.io/packagist/l/laraditz/tiktok.svg?style=flat-square)](./LICENSE.md)
+[![License](https://img.shields.io/packagist/l/laraditz/tiktok?style=flat-square)](./LICENSE.md)
 ![GitHub Actions](https://github.com/laraditz/tiktok/actions/workflows/main.yml/badge.svg)
 
 A comprehensive Laravel package for seamless integration with the TikTok Shop API. This package provides a clean, intuitive interface for managing TikTok shops, handling authentication, processing orders, managing products, and receiving webhooks.
