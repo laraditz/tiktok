@@ -56,9 +56,17 @@ TIKTOK_SHOP_CODE=your_shop_code_here      # Optional: Default shop code
 TIKTOK_SHOP_NAME=your_shop_name_here      # Optional: Default shop name
 ```
 
-### 3. Database Setup
+### 3. Publish Migration
 
-Run the migration to create required database tables:
+You can publish the migration file via this command:
+
+```bash
+php artisan vendor:publish --provider="Laraditz\TikTok\TikTokServiceProvider" --tag="migrations"
+```
+
+### 4. Run Migration
+
+Run the migration command to create the necessary database tables:
 
 ```bash
 php artisan migrate
@@ -66,7 +74,7 @@ php artisan migrate
 
 This creates tables for shops, access tokens, requests, webhooks, orders, and returns.
 
-### 4. Configuration (Optional)
+### 5. Configuration (Optional)
 
 Publish the configuration file if you need to customize settings:
 
@@ -74,7 +82,7 @@ Publish the configuration file if you need to customize settings:
 php artisan vendor:publish --provider="Laraditz\TikTok\TikTokServiceProvider" --tag="config"
 ```
 
-### 5. Authorization Flow
+### 6. Authorization Flow
 
 To authorize a TikTok shop with your app:
 
