@@ -3,6 +3,7 @@
 namespace Laraditz\TikTok;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Route;
 
 class TikTokServiceProvider extends ServiceProvider
 {
@@ -15,13 +16,13 @@ class TikTokServiceProvider extends ServiceProvider
          * Optional methods to load your package assets
          */
         // $this->loadTranslationsFrom(__DIR__.'/../resources/lang', 'tiktok');
-        // $this->loadViewsFrom(__DIR__.'/../resources/views', 'tiktok');
-        // $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
-        // $this->loadRoutesFrom(__DIR__.'/routes.php');
+        $this->loadViewsFrom(__DIR__ . '/../resources/views', 'tiktok');
+        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+        $this->registerRoutes();
 
         if ($this->app->runningInConsole()) {
             $this->publishes([
-                __DIR__.'/../config/config.php' => config_path('tiktok.php'),
+                __DIR__ . '/../config/config.php' => config_path('tiktok.php'),
             ], 'config');
 
             // Publishing the views.
@@ -40,7 +41,12 @@ class TikTokServiceProvider extends ServiceProvider
             ], 'lang');*/
 
             // Registering package commands.
-            // $this->commands([]);
+            if ($this->app->runningInConsole()) {
+                $this->commands([
+                    Console\RefreshTokenCommand::class,
+                    Console\FlushExpiredTokenCommand::class,
+                ]);
+            }
         }
     }
 
@@ -50,11 +56,31 @@ class TikTokServiceProvider extends ServiceProvider
     public function register()
     {
         // Automatically apply the package configuration
-        $this->mergeConfigFrom(__DIR__.'/../config/config.php', 'tiktok');
+        $this->mergeConfigFrom(__DIR__ . '/../config/config.php', 'tiktok');
 
         // Register the main class to use with the facade
         $this->app->singleton('tiktok', function () {
-            return new TikTok;
+            return new TikTok(
+                app_key: config('tiktok.app_key'),
+                app_secret: config('tiktok.app_secret'),
+            );
         });
+    }
+
+    protected function registerRoutes()
+    {
+        Route::group($this->routeConfiguration(), function () {
+            Route::name('tiktok.')->group(function () {
+                $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
+            });
+        });
+    }
+
+    protected function routeConfiguration()
+    {
+        return [
+            'prefix' => config('tiktok.routes.prefix'),
+            'middleware' => config('tiktok.middleware'),
+        ];
     }
 }

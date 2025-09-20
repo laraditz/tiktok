@@ -20,8 +20,8 @@
     "illuminate/support": "^10.0|^11.0|^12.0"
   },
   "require-dev": {
-    "orchestra/testbench": "^10.0",
-    "phpunit/phpunit": "^12.0"
+    "orchestra/testbench": "^8.0|^9.0|^10.0",
+    "phpunit/phpunit": "^10.0|^11.0"
   },
   "autoload": {
     "psr-4": {
@@ -46,7 +46,7 @@
         "Laraditz\\TikTok\\TikTokServiceProvider"
       ],
       "aliases": {
-        "TikTok": "Laraditz\\TikTok\\TikTokFacade"
+        "TikTok": "Laraditz\\TikTok\\Facades\\TikTok"
       }
     }
   }
