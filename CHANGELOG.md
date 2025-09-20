@@ -2,6 +2,19 @@
 
 All notable changes to `laraditz/tiktok` will be documented in this file
 
+## 1.0.1 - 2025-09-20
+
+### Added
+
+- New `tiktok_products` table for storing TikTok product data locally
+- New `tiktok_product_skus` table for storing product SKU variations
+- Migration publishing functionality - migrations are now published instead of auto-loaded
+
+### Changed
+
+- **BREAKING**: Service provider now publishes migrations instead of auto-loading them
+- Users must run `php artisan vendor:publish --provider="Laraditz\TikTok\TikTokServiceProvider" --tag="migrations"` to publish migrations
+
 ## 1.0.0 - 2025-09-20
 
 ### Added

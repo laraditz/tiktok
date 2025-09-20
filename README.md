@@ -2,7 +2,7 @@
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/laraditz/tiktok.svg?style=flat-square)](https://packagist.org/packages/laraditz/tiktok)
 [![Total Downloads](https://img.shields.io/packagist/dt/laraditz/tiktok.svg?style=flat-square)](https://packagist.org/packages/laraditz/tiktok)
-[![License](https://img.shields.io/packagist/l/laraditz/tiktok.svg?style=flat-square)](./LICENSE.md)
+[![License](https://img.shields.io/packagist/l/laraditz/tiktok?style=flat-square)](./LICENSE.md)
 ![GitHub Actions](https://github.com/laraditz/tiktok/actions/workflows/main.yml/badge.svg)
 
 A comprehensive Laravel package for seamless integration with the TikTok Shop API. This package provides a clean, intuitive interface for managing TikTok shops, handling authentication, processing orders, managing products, and receiving webhooks.
@@ -56,9 +56,17 @@ TIKTOK_SHOP_CODE=your_shop_code_here      # Optional: Default shop code
 TIKTOK_SHOP_NAME=your_shop_name_here      # Optional: Default shop name
 ```
 
-### 3. Database Setup
+### 3. Publish Migration
 
-Run the migration to create required database tables:
+You can publish the migration file via this command:
+
+```bash
+php artisan vendor:publish --provider="Laraditz\TikTok\TikTokServiceProvider" --tag="migrations"
+```
+
+### 4. Run Migration
+
+Run the migration command to create the necessary database tables:
 
 ```bash
 php artisan migrate
@@ -66,7 +74,7 @@ php artisan migrate
 
 This creates tables for shops, access tokens, requests, webhooks, orders, and returns.
 
-### 4. Configuration (Optional)
+### 5. Configuration (Optional)
 
 Publish the configuration file if you need to customize settings:
 
@@ -74,7 +82,7 @@ Publish the configuration file if you need to customize settings:
 php artisan vendor:publish --provider="Laraditz\TikTok\TikTokServiceProvider" --tag="config"
 ```
 
-### 5. Authorization Flow
+### 6. Authorization Flow
 
 To authorize a TikTok shop with your app:
 
@@ -375,7 +383,7 @@ You can also register individual webhooks for specific events:
 TikTok::event()->updateWebhook(
     body: [
         'event_type' => 'ORDER_STATUS_CHANGE',
-        'address' => 'https://your-app-url.com/webhooks/order-status',
+        'address' => 'https://your-app-url.com/tiktok/webhooks/order-status',
     ]
 );
 
@@ -383,7 +391,7 @@ TikTok::event()->updateWebhook(
 TikTok::event()->updateWebhook(
     body: [
         'event_type' => 'PRODUCT_UPDATE',
-        'address' => 'https://your-app-url.com/webhooks/product-update',
+        'address' => 'https://your-app-url.com/tiktok/webhooks/product-update',
     ]
 );
 ```

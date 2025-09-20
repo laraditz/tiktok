@@ -10,11 +10,14 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::table('tiktok_requests', function (Blueprint $table) {
-            $table->string('shop_id', 100)->nullable()->after('id');
+        if (!Schema::hasColumn('tiktok_requests', 'shop_id')) {
+            Schema::table('tiktok_requests', function (Blueprint $table) {
 
-            $table->index('shop_id');
-        });
+                $table->string('shop_id', 100)->nullable()->after('id');
+
+                $table->index('shop_id');
+            });
+        }
     }
 
     /**

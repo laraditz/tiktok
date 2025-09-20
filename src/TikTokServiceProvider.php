@@ -2,8 +2,9 @@
 
 namespace Laraditz\TikTok;
 
-use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\ServiceProvider;
 
 class TikTokServiceProvider extends ServiceProvider
 {
@@ -17,13 +18,15 @@ class TikTokServiceProvider extends ServiceProvider
          */
         // $this->loadTranslationsFrom(__DIR__.'/../resources/lang', 'tiktok');
         $this->loadViewsFrom(__DIR__ . '/../resources/views', 'tiktok');
-        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+        // $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
         $this->registerRoutes();
 
         if ($this->app->runningInConsole()) {
             $this->publishes([
                 __DIR__ . '/../config/config.php' => config_path('tiktok.php'),
             ], 'config');
+
+            $this->publishMigrations();
 
             // Publishing the views.
             /*$this->publishes([
@@ -82,5 +85,32 @@ class TikTokServiceProvider extends ServiceProvider
             'prefix' => config('tiktok.routes.prefix'),
             'middleware' => config('tiktok.middleware'),
         ];
+    }
+
+    protected function publishMigrations()
+    {
+        $databasePath = __DIR__ . '/../database/migrations/';
+        $migrationPath = database_path('migrations/');
+
+        $files = array_diff(scandir($databasePath), array('.', '..'));
+        $date = date('Y_m_d');
+        $time = date('His');
+
+        $migrationFiles = collect($files)
+            ->mapWithKeys(function (string $file) use ($databasePath, $migrationPath, $date, &$time) {
+                $filename = Str::replace(Str::substr($file, 0, 17), '', $file);
+
+                $found = glob($migrationPath . '*' . $filename);
+                $time = date("His", strtotime($time) + 1); // ensure in order
+    
+                return !!count($found) === true ? []
+                    : [
+                        $databasePath . $file => $migrationPath . $date . '_' . $time . $filename,
+                    ];
+            });
+
+        if ($migrationFiles->isNotEmpty()) {
+            $this->publishes($migrationFiles->toArray(), 'migrations');
+        }
     }
 }

@@ -11,14 +11,16 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('tiktok_orders', function (Blueprint $table) {
-            $table->string('id', 50)->primary();
-            $table->string('shop_id', 100)->nullable();
-            $table->string('status', 50)->nullable();
-            $table->tinyInteger('is_on_hold_order')->nullable();
-            $table->unsignedBigInteger('update_time')->nullable();
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('tiktok_orders')) {
+            Schema::create('tiktok_orders', function (Blueprint $table) {
+                $table->string('id', 50)->primary();
+                $table->string('shop_id', 100)->nullable();
+                $table->string('status', 50)->nullable();
+                $table->tinyInteger('is_on_hold_order')->nullable();
+                $table->unsignedBigInteger('update_time')->nullable();
+                $table->timestamps();
+            });
+        }
     }
 
     /**

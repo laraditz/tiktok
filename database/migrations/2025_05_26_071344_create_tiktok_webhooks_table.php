@@ -11,14 +11,16 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('tiktok_webhooks', function (Blueprint $table) {
-            $table->id();
-            $table->string('shop_id', 100)->nullable();
-            $table->unsignedInteger('type_id')->nullable();
-            $table->string('event_type', 100)->nullable();
-            $table->json('event_data')->nullable();
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('tiktok_webhooks')) {
+            Schema::create('tiktok_webhooks', function (Blueprint $table) {
+                $table->id();
+                $table->string('shop_id', 100)->nullable();
+                $table->unsignedInteger('type_id')->nullable();
+                $table->string('event_type', 100)->nullable();
+                $table->json('event_data')->nullable();
+                $table->timestamps();
+            });
+        }
     }
 
     /**
