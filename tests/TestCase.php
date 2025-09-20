@@ -57,7 +57,7 @@ abstract class TestCase extends BaseTestCase
             'code' => 'test_shop_code',
             'name' => 'Test Shop',
             'cipher' => 'test_cipher',
-            'region' => 'US',
+            'region' => 'MY',
             'seller_type' => 'test_seller',
         ], $attributes));
     }
