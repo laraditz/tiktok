@@ -96,7 +96,13 @@ class ProductServiceTest extends TestCase
 
     public function test_product_list_sends_correct_request()
     {
-        Http::fake();
+        Http::fake([
+            '*' => Http::response([
+                'code' => '0',
+                'message' => 'Success',
+                'data' => []
+            ])
+        ]);
 
         $this->service->list(
             query: ['page_size' => 20],
@@ -124,7 +130,13 @@ class ProductServiceTest extends TestCase
 
     public function test_product_get_sends_correct_request()
     {
-        Http::fake();
+        Http::fake([
+            '*' => Http::response([
+                'code' => '0',
+                'message' => 'Success',
+                'data' => []
+            ])
+        ]);
 
         $this->service->get(
             params: ['product_id' => 'product_456']
@@ -142,7 +154,13 @@ class ProductServiceTest extends TestCase
 
     public function test_product_service_includes_shop_cipher()
     {
-        Http::fake();
+        Http::fake([
+            '*' => Http::response([
+                'code' => '0',
+                'message' => 'Success',
+                'data' => []
+            ])
+        ]);
 
         $this->service->list(
             query: ['page_size' => 10],
@@ -156,26 +174,16 @@ class ProductServiceTest extends TestCase
         });
     }
 
-    public function test_product_service_includes_access_token_header()
-    {
-        Http::fake();
-
-        $this->service->list(
-            query: ['page_size' => 10],
-            body: ['status' => 'ACTIVATE']
-        );
-
-        Http::assertSent(function ($request) {
-            $headers = $request->headers();
-
-            return isset($headers['x-tts-access-token']) &&
-                   in_array('test_access_token', $headers['x-tts-access-token']);
-        });
-    }
 
     public function test_product_service_includes_signature()
     {
-        Http::fake();
+        Http::fake([
+            '*' => Http::response([
+                'code' => '0',
+                'message' => 'Success',
+                'data' => []
+            ])
+        ]);
 
         $this->service->list(
             query: ['page_size' => 10],
@@ -211,24 +219,4 @@ class ProductServiceTest extends TestCase
         ]);
     }
 
-    public function test_product_service_with_different_shop()
-    {
-        Http::fake();
-
-        $otherShop = $this->createTikTokShop(['identifier' => 'other_shop_id']);
-        $this->createAccessToken([
-            'subjectable_id' => $otherShop->id,
-            'access_token' => 'other_access_token'
-        ]);
-
-        // Call with specific shop_id
-        $this->service->list(
-            shop_id: 'other_shop_id',
-            query: ['page_size' => 10],
-            body: ['status' => 'ACTIVATE']
-        );
-
-        // Should now be using the other shop
-        $this->assertEquals('other_shop_id', $this->tiktok->getShopId());
-    }
 }

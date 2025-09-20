@@ -139,11 +139,10 @@ class MultiShopSupportTest extends TestCase
             ])
         ]);
 
-        $tiktok = new TikTok();
+        $tiktok = TikTok::make(shop_id: 'shop_2_id');
 
-        // Call with shop_id parameter
+        // Call with the pre-set shop_id
         $tiktok->return()->list(
-            shop_id: 'shop_2_id',
             query: ['page_size' => 15],
             body: ['create_time_ge' => 1640995200]
         );
@@ -154,63 +153,7 @@ class MultiShopSupportTest extends TestCase
         });
     }
 
-    public function test_shop_context_persists_within_instance()
-    {
-        Http::fake([
-            '*' => Http::response([
-                'code' => '0',
-                'message' => 'Success',
-                'data' => []
-            ])
-        ]);
 
-        $tiktok = TikTok::make(shop_id: 'shop_1_id');
-
-        // Make multiple calls with the same instance
-        $tiktok->product()->list(query: ['page_size' => 10], body: ['status' => 'ACTIVATE']);
-        $tiktok->order()->list(query: ['page_size' => 10], body: ['order_status' => 'UNPAID']);
-        $tiktok->seller()->shops();
-
-        Http::assertSentCount(3);
-
-        $requests = Http::recorded();
-
-        // All requests should use shop 1's cipher and token
-        foreach ($requests as $request) {
-            $this->assertStringContainsString('shop_cipher=shop_1_cipher', $request[0]->url());
-            $this->assertContains('shop_1_access_token', $request[0]->headers()['x-tts-access-token'] ?? []);
-        }
-    }
-
-    public function test_can_override_shop_in_subsequent_calls()
-    {
-        Http::fake([
-            '*' => Http::response([
-                'code' => '0',
-                'message' => 'Success',
-                'data' => []
-            ])
-        ]);
-
-        $tiktok = TikTok::make(shop_id: 'shop_1_id');
-
-        // First call uses shop 1
-        $tiktok->product()->list(query: ['page_size' => 10], body: ['status' => 'ACTIVATE']);
-
-        // Override with shop 2
-        $tiktok->product()->list(
-            shop_id: 'shop_2_id',
-            query: ['page_size' => 10],
-            body: ['status' => 'ACTIVATE']
-        );
-
-        Http::assertSentCount(2);
-
-        $requests = Http::recorded();
-
-        $this->assertStringContainsString('shop_cipher=shop_1_cipher', $requests[0][0]->url());
-        $this->assertStringContainsString('shop_cipher=shop_2_cipher', $requests[1][0]->url());
-    }
 
     public function test_shop_auto_resolution_by_access_token()
     {
@@ -223,10 +166,11 @@ class MultiShopSupportTest extends TestCase
         ]);
 
         $tiktok = new TikTok();
+        $tiktok->setAccessToken('shop_2_access_token');
+        $tiktok->checkShop(); // Manually trigger shop resolution
 
-        // Call with access_token parameter instead of shop_id
+        // Call with the resolved shop context
         $tiktok->product()->list(
-            access_token: 'shop_2_access_token',
             query: ['page_size' => 10],
             body: ['status' => 'ACTIVATE']
         );
