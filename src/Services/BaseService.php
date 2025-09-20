@@ -114,9 +114,9 @@ class BaseService
             if (is_array($params)) {
                 $mappedParams = collect($params)->mapWithKeys(fn($value, $key) => ["{" . $key . "}" => $value]);
 
-                $route_path = Str::swap($mappedParams->toArray(), $route);
+                $route_path = Str::swap($mappedParams->toArray(), $route_path);
             } elseif (is_string($params) || is_numeric($params)) {
-                $route_path = str_replace('{id}', $params, $route);
+                $route_path = str_replace('{id}', $params, $route_path);
             }
         }
 
