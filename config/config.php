@@ -42,6 +42,7 @@ return [
         'product' => [
             'get' => '/product/202309/products/{product_id}',
             'list' => 'POST /product/202502/products/search',
+            'update_inventory' => 'POST /product/202309/products/{product_id}/inventory/update',
         ],
         'return' => [
             'get' => '/return_refund/202309/returns/{return_id}/records',
