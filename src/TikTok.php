@@ -101,12 +101,14 @@ class TikTok
         $app_secret = $this->getAppSecret();
         $sign_method = $this->getSignMethod();
 
-        $queryString = Arr::except($queryString, ['access_token', 'sign']);
-        ksort($queryString);
+        $concatenatedString = collect($queryString)
+            ->except(['access_token', 'sign'])
+            ->sortKeys()
+            ->implode(function (string|int $item, string $key) {
+                return $key . $item;
+            }, '');
 
-        $data = urldecode(Arr::query($queryString));
-
-        $data = $route . Str::remove(['=', '&'], $data);
+        $data = $route . $concatenatedString;
 
         if (in_array(strtoupper($method), ['POST', 'PUT', 'PATCH', 'DELETE'])) {
             $data .= json_encode($payload);

@@ -2,17 +2,26 @@
 
 All notable changes to `laraditz/tiktok` will be documented in this file
 
+## 1.0.3 - 2025-09-21
+
+### Fixed
+
+- Bug fix in `getSignature` method in TikTok class.
+
 ## 1.0.2 - 2025-09-20
 
 ### Added
+
 - New `updateInventory` method in configuration routes
 - Enhanced inventory management capabilities
 
 ### Fixed
+
 - Bug fix in `setRouteFromConfig` method in BaseService
 - Improved route configuration handling
 
 ### Changed
+
 - Updated README.md documentation
 
 ## 1.0.1 - 2025-09-20
