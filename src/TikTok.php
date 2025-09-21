@@ -115,7 +115,6 @@ class TikTok
         }
 
         $data = $app_secret . $data . $app_secret;
-        // dd($data);
 
         $signature = hash_hmac($sign_method, $data, $app_secret);
 
