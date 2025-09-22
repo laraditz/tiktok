@@ -82,7 +82,7 @@ class ProductService extends BaseService
                 'status_info',
             ]);
 
-            $product = TiktokProductSku::updateOrCreate([
+            $productSku = TiktokProductSku::updateOrCreate([
                 'id' => $id,
                 'product_id' => $product->id
             ], $data);
