@@ -2,6 +2,12 @@
 
 All notable changes to `laraditz/tiktok` will be documented in this file
 
+## 1.0.4 - 2025-09-23
+
+### Fixed
+
+- Bug fix in `addProductSku` method in ProductService class.
+
 ## 1.0.3 - 2025-09-21
 
 ### Fixed
