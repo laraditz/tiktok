@@ -1,25 +1,25 @@
 <div class="container">
     <div class="box">
         <h2>{{ __('TikTok Seller Authorized!') }}</h2>
-        @if($shop?->accessToken)
+        @if($accessTokens && $accessTokens->isNotEmpty())
         <p>{{ __('Access token has been generated. You may now proceed to call any supported TikTok API using this SDK.') }}</p>
-        @endif
-        <ul>
-            <li><strong>{{ __('Authorization code') }}</strong>: {{ $code }}</li>
-            @if($shop)
-                @if($shop->name)
-                    <li><strong>{{ __('Shop name') }}</strong>: {{ $shop->name }}</li>
-                @endif
-                <li><strong>{{ __('Shop ID') }}</strong>: {{ $shop->identifier }}</li>
-                <li><strong>{{ __('Shop code') }}</strong>: {{ $shop->code }}</li>
-                @if($shop?->accessToken)
-                    <li><strong>{{ __('Access token') }}</strong>: {{ $shop->accessToken->access_token }} </li>
-                    <li><strong>{{ __('Access token expires at') }}</strong>: {{ $shop->accessToken->expires_at?->toDateTimeString() }} </li>
-                    <li><strong>{{ __('Refresh Token') }}</strong>: {{ $shop->accessToken->refresh_token }}</li>
-                    <li><strong>{{ __('Refresh token expires at') }}</strong>: {{ $shop->accessToken->refresh_expires_at?->toDateTimeString() }} </li>
-                @endif
+        <p><strong>{{ __('Authorization code') }}</strong>: {{ $code }}</p>
+
+        @foreach($accessTokens as $accessToken)
+        <ul>  
+            @if($accessToken->subjectable && $accessToken->subjectable instanceof \Laraditz\TikTok\Models\TiktokShop)
+            <li><strong>{{ __('Shop ID') }}</strong>: {{ $accessToken->subjectable->identifier ?? '-' }}</li>
+            <li><strong>{{ __('Shop name') }}</strong>: {{ $accessToken->subjectable->name  ?? '-' }}</li>
+            <li><strong>{{ __('Shop code') }}</strong>: {{ $accessToken->subjectable->code ?? '-' }}</li>
             @endif
+            <li><strong>{{ __('Access token') }}</strong>: {{ $accessToken->access_token }} </li>
+            <li><strong>{{ __('Access token expires at') }}</strong>: {{ $accessToken->expires_at?->toDateTimeString() }} </li>
+            <li><strong>{{ __('Refresh Token') }}</strong>: {{ $accessToken->refresh_token }}</li>
+            <li><strong>{{ __('Refresh token expires at') }}</strong>: {{ $accessToken->refresh_expires_at?->toDateTimeString() }} </li>
         </ul>
+        @endforeach
+        @endif
+       
     
     </div>
     </div>

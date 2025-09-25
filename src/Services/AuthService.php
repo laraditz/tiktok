@@ -31,15 +31,8 @@ class AuthService extends BaseService
 
             throw_if(!$open_id, TikTokTokenException::class, __('Missing open_id'));
 
-            $shop = TiktokShop::updateOrCreate(
-                [
-                    'name' => $seller_name,
-                ],
-                [
-                    'open_id' => $open_id,
-                    'region' => $seller_base_region,
-                ]
-            );
+            $authorizedShopsResponse = TikTok::authorization(access_token: $access_token)->shops();
+            $authorizedShops = data_get($authorizedShopsResponse, 'data.shops');
 
             $commonData = [
                 'access_token' => $access_token,
@@ -49,20 +42,36 @@ class AuthService extends BaseService
                 'code' => data_get($request, 'code'),
             ];
 
-            if ($shop->accessToken) {
-                $shop->accessToken->update($commonData);
-            } else {
-                $shop->accessToken()->create([
-                    ...$commonData,
-                    'open_id' => $open_id,
-                    'seller_name' => $seller_name,
-                    'seller_base_region' => $seller_base_region,
-                    'user_type' => $user_type,
-                    'granted_scopes' => $granted_scopes,
-                ]);
-            }
+            if ($authorizedShops && count($authorizedShops) > 0) {
+                foreach ($authorizedShops as $authorizedShop) {
+                    $shop = TiktokShop::updateOrCreate(
+                        [
+                            'identifier' => data_get($authorizedShop, 'id'),
+                        ],
+                        [
+                            'open_id' => $open_id,
+                            'code' => data_get($authorizedShop, 'code'),
+                            'name' => data_get($authorizedShop, 'name'),
+                            'region' => data_get($authorizedShop, 'region'),
+                            'seller_type' => data_get($authorizedShop, 'seller_type'),
+                            'cipher' => data_get($authorizedShop, 'cipher'),
+                        ]
+                    );
 
-            return $shop;
+                    if ($shop->accessToken) {
+                        $shop->accessToken->update($commonData);
+                    } else {
+                        $shop->accessToken()->create([
+                            ...$commonData,
+                            'open_id' => $open_id,
+                            'seller_name' => $seller_name,
+                            'seller_base_region' => $seller_base_region,
+                            'user_type' => $user_type,
+                            'granted_scopes' => $granted_scopes,
+                        ]);
+                    }
+                }
+            }
         });
     }
 
