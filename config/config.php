@@ -14,6 +14,7 @@ return [
     'shop_name' => env('TIKTOK_SHOP_NAME'),
     'auth_url' => 'https://auth.tiktok-shops.com',
     'base_url' => 'https://open-api.tiktokglobalshop.com',
+    'home_url' => env('TIKTOK_HOME_URL', '/'),
     'routes' => [
         'prefix' => 'tiktok',
         'auth' => [
