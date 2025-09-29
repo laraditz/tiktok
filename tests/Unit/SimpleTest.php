@@ -20,7 +20,7 @@ class SimpleTest extends TestCase
     {
         $shop = $this->createTikTokShop();
         $this->assertInstanceOf(TiktokShop::class, $shop);
-        $this->assertEquals('test_shop_id', $shop->identifier);
+        $this->assertEquals('test_shop_id', $shop->id);
     }
 
     public function test_can_create_access_token_model()
@@ -96,7 +96,7 @@ class SimpleTest extends TestCase
 
         Http::assertSent(function ($request) {
             return str_contains($request->url(), 'shop_cipher=test_cipher') &&
-                   str_contains($request->url(), 'app_key=test_app_key');
+                str_contains($request->url(), 'app_key=test_app_key');
         });
     }
 }

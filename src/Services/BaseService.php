@@ -41,12 +41,19 @@ class BaseService
 
         if (!$this->tiktok->getShop()) {
 
-            if ($this->getServiceName() === 'AuthService' && $this->getMethodName() === 'accessToken') {
+            if (
+                ($this->getServiceName() === 'AuthService' && $this->getMethodName() === 'accessToken')
+                || ($this->getServiceName() === 'AuthorizationService' && $this->getMethodName() === 'shops')
+            ) {
                 // no need to set shop
             } else {
                 $this->tiktok->checkShop();
 
-                throw_if(!$this->tiktok->getShop(), TikTokAPIError::class, ['code' => __('Error'), 'message' => __('Missing Seller ID.')]);
+                throw_if(
+                    !$this->tiktok->getShop(),
+                    TikTokAPIError::class,
+                    ['code' => __('Error'), 'message' => __('Missing Shop ID.')]
+                );
             }
         }
 

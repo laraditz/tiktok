@@ -2,9 +2,11 @@
 
 namespace Laraditz\TikTok\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Laraditz\TikTok\Exceptions\TikTokException;
+use Laraditz\TikTok\Models\TiktokAccessToken;
 use TikTok;
+use Illuminate\Http\Request;
+use Laraditz\TikTok\Models\TiktokShop;
+use Laraditz\TikTok\Exceptions\TikTokException;
 
 class SellerController extends Controller
 {
@@ -29,13 +31,11 @@ class SellerController extends Controller
 
             $access_token = data_get($accessToken, 'data.access_token');
 
-            $authorizedShops = TikTok::authorization(access_token: $access_token)->shops();
-
-            $shop = TikTok::getShop();
+            $accessTokens = TiktokAccessToken::where('access_token', $access_token)->get();
 
             return view('tiktok::sellers.authorized', [
                 'code' => $code,
-                'shop' => $shop,
+                'accessTokens' => $accessTokens,
             ]);
         } catch (\Throwable $th) {
             // dd($th->getMessage());

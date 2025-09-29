@@ -11,7 +11,7 @@ class TiktokShopTest extends TestCase
     public function test_can_create_tiktok_shop()
     {
         $shop = TiktokShop::create([
-            'identifier' => 'shop_123',
+            'id' => 'shop_123',
             'code' => 'SHOP123',
             'name' => 'Test Shop',
             'cipher' => 'cipher_123',
@@ -20,7 +20,7 @@ class TiktokShopTest extends TestCase
         ]);
 
         $this->assertInstanceOf(TiktokShop::class, $shop);
-        $this->assertEquals('shop_123', $shop->identifier);
+        $this->assertEquals('shop_123', $shop->id);
         $this->assertEquals('SHOP123', $shop->code);
         $this->assertEquals('Test Shop', $shop->name);
         $this->assertEquals('cipher_123', $shop->cipher);
@@ -43,7 +43,7 @@ class TiktokShopTest extends TestCase
         $fillable = $shop->getFillable();
 
         $expectedFillable = [
-            'identifier',
+            'id',
             'code',
             'name',
             'cipher',
@@ -71,11 +71,11 @@ class TiktokShopTest extends TestCase
         $this->assertEquals('id', $shop->getKeyName());
     }
 
-    public function test_shop_can_be_found_by_identifier()
+    public function test_shop_can_be_found_by_id()
     {
-        $shop = $this->createTikTokShop(['identifier' => 'findable_123']);
+        $shop = $this->createTikTokShop(['id' => 'findable_123']);
 
-        $foundShop = TiktokShop::where('identifier', 'findable_123')->first();
+        $foundShop = TiktokShop::where('id', 'findable_123')->first();
 
         $this->assertNotNull($foundShop);
         $this->assertEquals($shop->id, $foundShop->id);
@@ -93,12 +93,12 @@ class TiktokShopTest extends TestCase
 
     public function test_can_create_multiple_shops()
     {
-        $shop1 = $this->createTikTokShop(['identifier' => 'shop_1', 'name' => 'Shop One']);
-        $shop2 = $this->createTikTokShop(['identifier' => 'shop_2', 'name' => 'Shop Two']);
+        $shop1 = $this->createTikTokShop(['id' => 'shop_1', 'name' => 'Shop One']);
+        $shop2 = $this->createTikTokShop(['id' => 'shop_2', 'name' => 'Shop Two']);
 
         $this->assertNotEquals($shop1->id, $shop2->id);
-        $this->assertEquals('shop_1', $shop1->identifier);
-        $this->assertEquals('shop_2', $shop2->identifier);
+        $this->assertEquals('shop_1', $shop1->id);
+        $this->assertEquals('shop_2', $shop2->id);
     }
 
     public function test_shop_can_have_multiple_access_tokens_history()

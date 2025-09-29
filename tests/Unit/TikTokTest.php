@@ -172,9 +172,9 @@ class TikTokTest extends TestCase
         $this->assertEquals('sha256', $tiktok->getSignMethod());
     }
 
-    public function test_check_shop_finds_shop_by_identifier()
+    public function test_check_shop_finds_shop_by_id()
     {
-        $shop = $this->createTikTokShop(['identifier' => 'find_me']);
+        $shop = $this->createTikTokShop(['id' => 'find_me']);
         $this->createAccessToken(['subjectable_id' => $shop->id]);
 
         $tiktok = new TikTok();
@@ -182,7 +182,7 @@ class TikTokTest extends TestCase
         $tiktok->checkShop();
 
         $this->assertNotNull($tiktok->getShop());
-        $this->assertEquals('find_me', $tiktok->getShop()->identifier);
+        $this->assertEquals('find_me', $tiktok->getShop()->id);
     }
 
     public function test_check_shop_finds_shop_by_code()
@@ -238,7 +238,7 @@ class TikTokTest extends TestCase
 
     public function test_magic_call_with_shop_id_parameter()
     {
-        $shop = $this->createTikTokShop(['identifier' => 'magic_shop_id']);
+        $shop = $this->createTikTokShop(['id' => 'magic_shop_id']);
         $this->createAccessToken(['subjectable_id' => $shop->id]);
 
         $tiktok = new TikTok();

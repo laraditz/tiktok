@@ -17,6 +17,6 @@ class TiktokWebhook extends Model
 
     public function shop()
     {
-        return $this->belongsTo(TiktokShop::class, 'identifier', 'shop_id');
+        return $this->belongsTo(TiktokShop::class);
     }
 }

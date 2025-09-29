@@ -62,15 +62,14 @@ class TikTok
 
         if (
             ($this->getShop() === null && $this->getShopId())
-            || ($this->getShop() && $this->getShop()?->identifier && $this->getShop()?->identifier !== $this->getShopId())
+            || ($this->getShop() && $this->getShop()?->id && $this->getShop()?->id !== $this->getShopId())
         ) {
 
-            // $tikTokShop = TiktokShop::firstOrCreate(['identifier' => $this->getShopId()], []);
-            $tikTokShop = TiktokShop::where('identifier', $this->getShopId())->first();
+            $tikTokShop = TiktokShop::where('id', $this->getShopId())->first();
 
             if ($tikTokShop) {
                 $this->setShop($tikTokShop);
-                $this->setShopId($tikTokShop->identifier);
+                $this->setShopId($tikTokShop->id);
                 $this->setShopCode($tikTokShop->code);
                 $this->setShopName($tikTokShop->name);
                 if ($this->getShop()?->accessToken?->access_token) {
@@ -211,7 +210,7 @@ class TikTok
             $shop_name = $this->shop_name ?? config('tiktok.shop_name');
 
             if ($shop_id) {
-                $this->shop = TiktokShop::where('identifier', $shop_id)->first();
+                $this->shop = TiktokShop::where('id', $shop_id)->first();
             }
 
             if (!$this->shop && $shop_code) {
@@ -225,7 +224,7 @@ class TikTok
             }
 
             if ($this->shop) {
-                $this->setShopId($this->shop->identifier);
+                $this->setShopId($this->shop->id);
                 $this->setShopCode($this->shop->code);
                 $this->setShopName($this->shop->name);
                 if ($this->shop?->accessToken) {
