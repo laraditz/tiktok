@@ -9,6 +9,18 @@ A comprehensive Laravel package for seamless integration with the TikTok Shop AP
 
 <a href="https://www.buymeacoffee.com/raditzfarhan" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 50px !important;width: 200px !important;" ></a>
 
+## ⚠️ Breaking Changes in v1.1.0
+
+**IMPORTANT:** If you're upgrading from v1.0.4 or below, please note the following breaking changes:
+
+- **Database Schema Changes**: The `tiktok_shops` table structure has been updated:
+  - The `id` column now serves as the TikTok shop ID (unique identifier)
+  - The `identifier` column has been removed as it's no longer used
+- **Re-authorization Required**: Due to these database changes, **you will need to re-authorize all your TikTok shops** after upgrading to v1.1.0
+- **Migration Impact**: Run the new migrations and ensure your existing shop data is properly migrated before re-authorizing
+
+Please backup your database before upgrading and plan for shop re-authorization in your deployment process.
+
 ## Features
 
 - 🔐 **Complete Authentication Flow** - Automatic token management with refresh capabilities
