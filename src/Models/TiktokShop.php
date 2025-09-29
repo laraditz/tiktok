@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class TiktokShop extends Model
 {
     protected $fillable = [
-        'identifier',
+        'id',
         'code',
         'name',
         'region',
@@ -15,6 +15,16 @@ class TiktokShop extends Model
         'cipher',
         'open_id',
     ];
+
+    public function getIncrementing(): bool
+    {
+        return false;
+    }
+
+    public function getKeyType(): string
+    {
+        return 'string';
+    }
 
     public function accessToken()
     {

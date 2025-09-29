@@ -21,7 +21,7 @@ class MultiShopSupportTest extends TestCase
 
         // Create first shop
         $this->shop1 = TiktokShop::create([
-            'identifier' => 'shop_1_id',
+            'id' => 'shop_1_id',
             'code' => 'SHOP001',
             'name' => 'Shop One',
             'cipher' => 'shop_1_cipher',
@@ -40,7 +40,7 @@ class MultiShopSupportTest extends TestCase
 
         // Create second shop
         $this->shop2 = TiktokShop::create([
-            'identifier' => 'shop_2_id',
+            'id' => 'shop_2_id',
             'code' => 'SHOP002',
             'name' => 'Shop Two',
             'cipher' => 'shop_2_cipher',

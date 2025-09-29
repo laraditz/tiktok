@@ -53,7 +53,7 @@ abstract class TestCase extends BaseTestCase
     protected function createTikTokShop(array $attributes = [])
     {
         return \Laraditz\TikTok\Models\TiktokShop::create(array_merge([
-            'identifier' => 'test_shop_id',
+            'id' => 'test_shop_id',
             'code' => 'test_shop_code',
             'name' => 'Test Shop',
             'cipher' => 'test_cipher',

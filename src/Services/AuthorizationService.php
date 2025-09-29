@@ -2,13 +2,10 @@
 
 namespace Laraditz\TikTok\Services;
 
-use Illuminate\Support\Str;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\DB;
+
 use Laraditz\TikTok\Models\TiktokShop;
 use Illuminate\Database\Eloquent\Builder;
 use Laraditz\TikTok\Models\TiktokRequest;
-use Laraditz\TikTok\Exceptions\TikTokTokenException;
 
 class AuthorizationService extends BaseService
 {
@@ -28,14 +25,13 @@ class AuthorizationService extends BaseService
 
                     $tikTokShop = TiktokShop::query()
                         ->where(function (Builder $query) use ($shop_id, $shop_code, $shop_name) {
-                            $query->where('name', $shop_name)
-                                ->orWhere('identifier', $shop_id)
+                            $query->where('id', $shop_id)
                                 ->orWhere('code', $shop_code);
                         });
 
                     if (!$tikTokShop) {
                         TiktokShop::create([
-                            'identifier' => $shop_id,
+                            'id' => $shop_id,
                             'code' => $shop_code,
                             'name' => $shop_name,
                             'region' => data_get($shop, 'region'),
@@ -44,7 +40,6 @@ class AuthorizationService extends BaseService
                         ]);
                     } else {
                         $tikTokShop->update([
-                            'identifier' => $shop_id,
                             'name' => $shop_name,
                             'code' => $shop_code,
                             'region' => data_get($shop, 'region'),

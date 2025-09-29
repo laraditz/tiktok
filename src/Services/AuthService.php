@@ -46,7 +46,7 @@ class AuthService extends BaseService
                 foreach ($authorizedShops as $authorizedShop) {
                     $shop = TiktokShop::updateOrCreate(
                         [
-                            'identifier' => data_get($authorizedShop, 'id'),
+                            'id' => data_get($authorizedShop, 'id'),
                         ],
                         [
                             'open_id' => $open_id,
@@ -126,7 +126,7 @@ class AuthService extends BaseService
         $seller_name = data_get($data, 'seller_name');
 
         if ($request->shop_id) {
-            $shop = TiktokShop::where('identifier', $request->shop_id)->first();
+            $shop = TiktokShop::where('id', $request->shop_id)->first();
         }
 
         if (!$shop && $seller_name) {

@@ -23,7 +23,7 @@
                         <h2>{{ __('Shop Information') }}</h2>
                         <div class="item">
                             <span class="label">{{ __('Shop ID') }}</span>
-                            <span>{{ $accessToken->subjectable->identifier ?? '-' }}</span>
+                            <span>{{ $accessToken->subjectable->id ?? '-' }}</span>
                         </div>
                         <div class="item">
                             <span class="label">{{ __('Shop Name') }}</span>
