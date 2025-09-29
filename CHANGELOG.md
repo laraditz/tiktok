@@ -2,6 +2,24 @@
 
 All notable changes to `laraditz/tiktok` will be documented in this file
 
+## 1.1.0 - 2025-09-29
+
+### Changed
+
+- **BREAKING**: Updated `tiktok_shops` table structure - ID column now serves as TikTok shop ID
+- Improved authorization flow handling
+- Enhanced seller authorization view
+
+### Removed
+
+- **BREAKING**: Removed `identifier` column from `tiktok_shops` table as it's no longer used
+
+### Updated
+
+- Updated all model relationships to use new shop ID structure
+- Modified base service and authentication classes to work with new shop identification system
+- Updated test cases to reflect database schema changes
+
 ## 1.0.4 - 2025-09-23
 
 ### Fixed
