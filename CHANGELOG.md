@@ -2,6 +2,12 @@
 
 All notable changes to `laraditz/tiktok` will be documented in this file
 
+## 1.1.1 - 2025-10-02
+
+### Changed
+
+- Updated `ORDER_RETURN_STATUS_CHANGE` event type enum to `RETURN_STATUS_CHANGE`
+
 ## 1.1.0 - 2025-09-29
 
 ### Changed
