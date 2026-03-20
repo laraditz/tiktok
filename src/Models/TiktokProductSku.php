@@ -3,9 +3,12 @@
 namespace Laraditz\TikTok\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class TiktokProductSku extends Model
 {
+    use SoftDeletes;
+
     protected $fillable = ['id', 'product_id', 'seller_sku', 'inventory', 'price', 'status_info'];
 
     public function getIncrementing(): bool

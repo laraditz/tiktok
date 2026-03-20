@@ -3,7 +3,6 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use Laraditz\TikTok\Models\TiktokShop;
 
 return new class extends Migration {
     /**
@@ -14,7 +13,7 @@ return new class extends Migration {
         if (!Schema::hasTable('tiktok_event_webhooks')) {
             Schema::create('tiktok_event_webhooks', function (Blueprint $table) {
                 $table->id();
-                $table->foreignIdFor(TiktokShop::class, 'shop_id');
+                $table->bigInteger('shop_id')->unsigned();
                 $table->string('event_type', 100);
                 $table->string('address')->nullable();
                 $table->timestamps();

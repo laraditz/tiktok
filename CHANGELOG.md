@@ -2,6 +2,16 @@
 
 All notable changes to `laraditz/tiktok` will be documented in this file
 
+## 1.1.2 - 2026-03-21
+
+### Added
+
+- Added soft-deletes support to `tiktok_products` and `tiktok_product_skus` tables
+
+### Fixed
+
+- Fixed migration bug on `tiktok_event_webhooks` table with foreign key `shop_id`
+
 ## 1.1.1 - 2025-10-02
 
 ### Changed
