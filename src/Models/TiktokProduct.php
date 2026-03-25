@@ -3,6 +3,8 @@
 namespace Laraditz\TikTok\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class TiktokProduct extends Model
@@ -33,8 +35,13 @@ class TiktokProduct extends Model
         ];
     }
 
-    public function shop()
+    public function shop(): BelongsTo
     {
         return $this->belongsTo(TiktokShop::class);
+    }
+
+    public function skus(): HasMany
+    {
+        return $this->hasMany(TiktokProductSku::class, 'product_id', 'id');
     }
 }

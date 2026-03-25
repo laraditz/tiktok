@@ -17,6 +17,7 @@ class TikTokRequestFailed
         public string $methodName,
         public ?array $query = [],
         public ?array $body = [],
+        public ?array $result = [],
         public ?string $message = null,
     ) {
         //
