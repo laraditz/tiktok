@@ -2,16 +2,17 @@
 
 namespace Laraditz\TikTok\Services;
 
-use LogicException;
 use BadMethodCallException;
-use Illuminate\Support\Str;
-use Laraditz\TikTok\TikTok;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
-use Laraditz\TikTok\Models\TiktokRequest;
-use Illuminate\Http\Client\RequestException;
-use Laraditz\TikTok\Exceptions\TikTokAPIError;
+use Illuminate\Support\Str;
 use Laraditz\TikTok\Events\TikTokRequestFailed;
+use Laraditz\TikTok\Exceptions\TikTokAPIError;
+use Laraditz\TikTok\Jobs\RemoveMissingProducts;
+use Laraditz\TikTok\Models\TiktokRequest;
+use Laraditz\TikTok\TikTok;
+use LogicException;
 
 class BaseService
 {
@@ -204,7 +205,7 @@ class BaseService
                 'error' => Str::limit(trim($e->getMessage()), 255),
             ]);
 
-            $this->fireFailedEvents($message);
+            $this->fireFailedEvents($request, $result, $message);
         });
 
         // dd($response->successful(), $response->failed(), $response->body(), $response->getStatusCode());
@@ -230,7 +231,7 @@ class BaseService
                 return $result;
             }
 
-            $this->fireFailedEvents($message);
+            $this->fireFailedEvents($request, $result, $message);
 
             // http success but api request failed
             throw new TikTokAPIError($result ?? ['code' => __('Error')]);
@@ -245,15 +246,22 @@ class BaseService
         throw new TikTokAPIError(['code' => __('Error'), 'message' => __('API Server Error')]);
     }
 
-    private function fireFailedEvents(?string $message = null)
+    private function fireFailedEvents(TiktokRequest $request, ?array $result = [], ?string $message = null)
     {
+        $code = data_get($result, 'code');
+
         event(new TikTokRequestFailed(
             fqcn: $this->fqcn,
             methodName: $this->getMethodName(),
             query: $this->getQueryString(),
             body: $this->getPayload(),
+            result: $result,
             message: $message
         ));
+
+        if ($code === 12052260 || $code === 12052048) { //product id not exist
+            dispatch(new RemoveMissingProducts($request, $result));
+        }
     }
 
     private function requireSignature(): bool
