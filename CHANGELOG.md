@@ -2,6 +2,12 @@
 
 All notable changes to `laraditz/tiktok` will be documented in this file
 
+## 1.1.3 - 2026-03-25
+
+### Added
+
+- Soft-delete products that do not exist or do not belong to the shop when calling `updateInventory()`
+
 ## 1.1.2 - 2026-03-21
 
 ### Added
