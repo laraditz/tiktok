@@ -25,6 +25,8 @@ All notable changes to `laraditz/tiktok` will be documented in this file
 - **BREAKING**: Updated `tiktok_shops` table structure - ID column now serves as TikTok shop ID
 - Improved authorization flow handling
 - Enhanced seller authorization view
+- Re-authorization Required: Due to these database changes, you will need to re-authorize all your TikTok shops after upgrading to v1.1.0
+- Migration Impact: Run the new migrations and ensure your existing shop data is properly migrated before re-authorizing
 
 ### Removed
 
