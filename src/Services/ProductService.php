@@ -54,13 +54,13 @@ class ProductService extends BaseService
         DB::beginTransaction();
 
         try {
-            $product = TiktokProduct::updateOrCreate([
+            $tiktokProduct = TiktokProduct::updateOrCreate([
                 'id' => $productId,
                 'shop_id' => $shopId
             ], $data);
 
-            if ($product && $skus && is_array($skus) && count($skus) > 0) {
-                $this->addProductSku($product, $skus);
+            if ($tiktokProduct && $skus && is_array($skus) && count($skus) > 0) {
+                $this->addProductSku($productId, $skus);
             }
 
             DB::commit();
@@ -70,7 +70,7 @@ class ProductService extends BaseService
         }
     }
 
-    private function addProductSku(TiktokProduct $product, array $skus)
+    private function addProductSku($productId, array $skus)
     {
         foreach ($skus as $sku) {
             $id = data_get($sku, 'id');
@@ -82,10 +82,10 @@ class ProductService extends BaseService
                 'status_info',
             ]);
 
-            $productSku = TiktokProductSku::updateOrCreate([
-                'id' => $id,
-                'product_id' => $product->id
-            ], $data);
+            $productSku = TiktokProductSku::updateOrCreate(
+                ['id' => $id],
+                array_merge(['product_id' => $productId], $data)
+            );
         }
 
     }
