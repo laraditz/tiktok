@@ -2,6 +2,12 @@
 
 All notable changes to `laraditz/tiktok` will be documented in this file
 
+## 1.1.4 - 2026-04-22
+
+### Changed
+
+- Fix stale product_id on `tiktok_product_skus` table
+
 ## 1.1.3 - 2026-03-25
 
 ### Added
