@@ -11,7 +11,7 @@ use Illuminate\Support\Str;
 
 class TikTok
 {
-    private $services = ['auth', 'authorization', 'seller', 'order', 'product', 'event', 'return'];
+    private $services = ['auth', 'authorization', 'seller', 'order', 'product', 'event', 'return', 'finance'];
 
     private ?TiktokShop $shop = null;
 

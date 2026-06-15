@@ -13,7 +13,7 @@ return new class extends Migration {
         Schema::disableForeignKeyConstraints();
 
         Schema::table('tiktok_event_webhooks', function (Blueprint $table) {
-            $table->dropForeign('tiktok_event_webhooks_shop_id_foreign');
+            $table->dropForeign(['shop_id']);
         });
 
         Schema::table('tiktok_shops', function (Blueprint $table) {

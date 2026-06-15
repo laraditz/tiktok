@@ -49,6 +49,14 @@ return [
             'get' => '/return_refund/202309/returns/{return_id}/records',
             'list' => 'POST /return_refund/202309/returns/search',
         ],
+        'finance' => [
+            'statements' => '/finance/202309/statements',
+            'payments' => '/finance/202605/payments',
+            'withdrawals' => '/finance/202309/withdrawals',
+            'unsettled_transactions' => '/finance/202507/orders/unsettled',
+            'transactions_by_order' => '/finance/202501/orders/{order_id}/statement_transactions',
+            'transactions_by_statement' => '/finance/202501/statements/{statement_id}/statement_transactions',
+        ],
     ],
     'middleware' => ['api'],
 ];
