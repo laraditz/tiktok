@@ -16,6 +16,7 @@ A comprehensive Laravel package for seamless integration with the TikTok Shop AP
 - 📦 **Product Management** - Full CRUD operations for TikTok Shop products
 - 🛒 **Order Processing** - Comprehensive order management and tracking
 - 🔄 **Return Handling** - Complete return and refund management
+- 💰 **Finance Tracking** - Statements, transactions, payments, and withdrawals
 - 📡 **Webhook Integration** - Real-time event handling with built-in webhook endpoints
 - 🗄️ **Database Logging** - Automatic request logging for debugging and monitoring
 - 🔄 **Auto Token Refresh** - Background token refresh to maintain API connectivity
@@ -161,6 +162,19 @@ Full parameters refer to [API documentation](https://partner.tiktokshop.com/docv
 | `list()` | Use this API to retrieve one or more returns. | query: `page_size`, `page_token` and more |
 | `get()`  | Use this API to get a list of return records. | params: `return_id`                       |
 
+### Finance Service `finance()`
+
+Full parameters refer to [API documentation](https://partner.tiktokshop.com/docv2/page/finance-api-overview)
+
+| Method                      | Description                                                          | Parameters                                |
+| ---------------------------- | --------------------------------------------------------------------- | ------------------------------------------ |
+| `statements()`               | Retrieve a list of statements.                                       | query: `page_size`, `page_token` and more |
+| `transactionsByOrder()`      | Retrieve the statement transactions of an order.                    | params: `order_id`                        |
+| `transactionsByStatement()`  | Retrieve the statement transactions of a statement.                 | params: `statement_id`                    |
+| `unsettledTransactions()`    | Retrieve a list of unsettled transactions.                           | query: `page_size`, `page_token` and more |
+| `payments()`                 | Retrieve a list of payments.                                         | query: `page_size`, `page_token` and more |
+| `withdrawals()`              | Retrieve a list of withdrawals.                                      | query: `page_size`, `page_token` and more |
+
 ## Usage Examples
 
 ### Basic Usage
@@ -264,6 +278,53 @@ $returns = TikTok::return()->list(
 $returnRecords = TikTok::return()->get(
     params: [
         'return_id' => '168129934203XXXX' // A unique identifier for a TikTok Shop return request.
+    ]
+);
+```
+
+### Finance Tracking
+
+```php
+// Get statements
+$statements = TikTok::finance()->statements(
+    query: [
+        'page_size' => 20,
+        'sort_field' => 'statement_time'
+    ]
+);
+
+// Get transactions for an order
+$orderTransactions = TikTok::finance()->transactionsByOrder(
+    params: [
+        'order_id' => 'your_order_id'
+    ]
+);
+
+// Get transactions for a statement
+$statementTransactions = TikTok::finance()->transactionsByStatement(
+    params: [
+        'statement_id' => 'your_statement_id'
+    ]
+);
+
+// Get unsettled transactions
+$unsettled = TikTok::finance()->unsettledTransactions(
+    query: [
+        'page_size' => 20
+    ]
+);
+
+// Get payments
+$payments = TikTok::finance()->payments(
+    query: [
+        'page_size' => 20
+    ]
+);
+
+// Get withdrawals
+$withdrawals = TikTok::finance()->withdrawals(
+    query: [
+        'page_size' => 20
     ]
 );
 ```
