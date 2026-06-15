@@ -2,6 +2,16 @@
 
 All notable changes to `laraditz/tiktok` will be documented in this file
 
+## 1.1.5 - 2026-06-15
+
+### Added
+
+- New `FinanceService` (`finance()`) with `statements()`, `payments()`, `withdrawals()`, `unsettledTransactions()`, `transactionsByOrder()`, and `transactionsByStatement()` methods
+
+### Fixed
+
+- Fixed `dropForeign` by name not supported on SQLite in `tiktok_shops` id column migration
+
 ## 1.1.4 - 2026-04-22
 
 ### Changed
