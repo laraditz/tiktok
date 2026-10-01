@@ -2,7 +2,9 @@
 
 namespace Laraditz\TikTok\Tests\Feature;
 
+use Illuminate\Support\Facades\Event;
 use Laraditz\TikTok\Tests\TestCase;
+use Laraditz\TikTok\Events\WebhookReceived;
 use Laraditz\TikTok\Models\TiktokOrder;
 use Laraditz\TikTok\Models\TiktokWebhook;
 
@@ -92,5 +94,29 @@ class WebhookControllerTest extends TestCase
 
         $this->assertSame('ORDER_STATUS_CHANGE', $webhook->event_type);
         $this->assertSame(1, (int) $webhook->type_id);
+    }
+
+    public function test_webhook_received_event_carries_type_id_for_known_type()
+    {
+        Event::fake([WebhookReceived::class]);
+
+        $this->postWebhook('all', $this->payload())->assertOk();
+
+        Event::assertDispatched(WebhookReceived::class, function (WebhookReceived $event) {
+            return $event->eventType === 'ORDER_STATUS_CHANGE'
+                && $event->typeId === 1
+                && $event->data['type'] === 1;
+        });
+    }
+
+    public function test_webhook_received_event_carries_type_id_for_unknown_type()
+    {
+        Event::fake([WebhookReceived::class]);
+
+        $this->postWebhook('all', $this->payload(['type' => 9999]))->assertOk();
+
+        Event::assertDispatched(WebhookReceived::class, function (WebhookReceived $event) {
+            return $event->eventType === 'UNKNOWN' && $event->typeId === 9999;
+        });
     }
 }
