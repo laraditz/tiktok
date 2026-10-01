@@ -5,6 +5,7 @@ namespace Laraditz\TikTok\Tests\Feature;
 use Illuminate\Support\Facades\Event;
 use Laraditz\TikTok\Tests\TestCase;
 use Laraditz\TikTok\Events\WebhookReceived;
+use Laraditz\TikTok\Exceptions\TikTokException;
 use Laraditz\TikTok\Models\TiktokOrder;
 use Laraditz\TikTok\Models\TiktokWebhook;
 
@@ -118,5 +119,22 @@ class WebhookControllerTest extends TestCase
         Event::assertDispatched(WebhookReceived::class, function (WebhookReceived $event) {
             return $event->eventType === 'UNKNOWN' && $event->typeId === 9999;
         });
+    }
+
+    public function test_per_event_route_rejects_unknown_slug()
+    {
+        $this->withoutExceptionHandling();
+        $this->expectException(TikTokException::class);
+        $this->expectExceptionMessage('Invalid event type.');
+
+        $this->postWebhook('not-a-real-event', $this->payload());
+    }
+
+    public function test_per_event_route_accepts_known_slug()
+    {
+        $this->postWebhook('order-status-change', $this->payload())->assertOk();
+
+        $this->assertSame('ORDER_STATUS_CHANGE', TiktokWebhook::first()->event_type);
+        $this->assertSame('AWAITING_SHIPMENT', TiktokOrder::find('576461413038785752')?->status);
     }
 }
