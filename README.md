@@ -411,14 +411,16 @@ class TikTokWebhookListener
 {
     public function handle(WebhookReceived $event)
     {
-        $eventType = $event->eventType;
+        $eventType = $event->eventType; // e.g. ORDER_STATUS_CHANGE, or UNKNOWN
+        $typeId = $event->typeId;       // TikTok's numeric webhook type, e.g. 1
         $data = $event->data;
 
         match ($eventType) {
             'ORDER_STATUS_CHANGE' => $this->handleOrderStatusChange($eventType, $data),
             'RETURN_STATUS_CHANGE' => $this->handleReturnStatusChange($eventType, $data),
             // Handle other event types
-        }
+            default => null,
+        };
     }
 
     private function handleOrderStatusChange(string $eventType, array $data)
@@ -457,24 +459,26 @@ Configure this URL in your TikTok Shop App Management section under `Manage Webh
 https://your-app-url.com/tiktok/webhooks/all
 ```
 
+The event type is resolved from the payload's `type` ID using the `Laraditz\TikTok\Enums\EventType` enum. TikTok adds new webhook types regularly, so a type ID not yet in the enum is **not rejected**: it is stored in `tiktok_webhooks` and dispatched through `WebhookReceived` with `eventType` set to `UNKNOWN`. Use `$event->typeId` (or the `type_id` column) to identify it.
+
 #### 2. Event-Specific Webhooks
 
-You can also register individual webhooks for specific events:
+You can also register individual webhooks for specific events. The URL slug is the kebab-case `EventType` case name, and unlike `/all`, an unrecognised slug is rejected:
 
 ```php
 // Register webhook for order status changes
 TikTok::event()->updateWebhook(
     body: [
         'event_type' => 'ORDER_STATUS_CHANGE',
-        'address' => 'https://your-app-url.com/tiktok/webhooks/order-status',
+        'address' => 'https://your-app-url.com/tiktok/webhooks/order-status-change',
     ]
 );
 
-// Register webhook for product updates
+// Register webhook for product status changes
 TikTok::event()->updateWebhook(
     body: [
-        'event_type' => 'PRODUCT_UPDATE',
-        'address' => 'https://your-app-url.com/tiktok/webhooks/product-update',
+        'event_type' => 'PRODUCT_STATUS_CHANGE',
+        'address' => 'https://your-app-url.com/tiktok/webhooks/product-status-change',
     ]
 );
 ```
