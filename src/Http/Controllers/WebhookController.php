@@ -100,7 +100,7 @@ class WebhookController extends Controller
 
     }
 
-    private function orderReturnStatusChange(TiktokWebhook $webhook, Request $request)
+    private function returnStatusChange(TiktokWebhook $webhook, Request $request)
     {
         $data = $request->data;
 

@@ -8,6 +8,7 @@ use Laraditz\TikTok\Events\WebhookReceived;
 use Laraditz\TikTok\Exceptions\TikTokException;
 use Laraditz\TikTok\Models\TiktokOrder;
 use Laraditz\TikTok\Models\TiktokWebhook;
+use Laraditz\TikTok\Models\TiktokReturnOrder;
 
 class WebhookControllerTest extends TestCase
 {
@@ -119,6 +120,34 @@ class WebhookControllerTest extends TestCase
         Event::assertDispatched(WebhookReceived::class, function (WebhookReceived $event) {
             return $event->eventType === 'UNKNOWN' && $event->typeId === 9999;
         });
+    }
+
+    public function test_return_status_change_upserts_return_order()
+    {
+        $this->postWebhook('all', $this->payload([
+            'type' => 12,
+            'data' => [
+                'order_id' => '576461413038785752',
+                'return_id' => '4035312491762585666',
+                'return_role' => 'BUYER',
+                'return_type' => 'REFUND',
+                'return_status' => 'RETURN_OR_REFUND_REQUEST_PENDING',
+                'create_time' => 1776100000,
+                'update_time' => 1776107000,
+            ],
+        ]))->assertOk();
+
+        $returnOrder = TiktokReturnOrder::first();
+
+        $this->assertNotNull($returnOrder);
+        $this->assertSame('test_shop_id', $returnOrder->shop_id);
+        $this->assertSame('576461413038785752', $returnOrder->order_id);
+        $this->assertSame('4035312491762585666', $returnOrder->return_id);
+        $this->assertSame('BUYER', $returnOrder->role);
+        $this->assertSame('REFUND', $returnOrder->type);
+        $this->assertSame('RETURN_OR_REFUND_REQUEST_PENDING', $returnOrder->status);
+        $this->assertSame(1776100000, (int) $returnOrder->create_time);
+        $this->assertSame(1776107000, (int) $returnOrder->update_time);
     }
 
     public function test_per_event_route_rejects_unknown_slug()
