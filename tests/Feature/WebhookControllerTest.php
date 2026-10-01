@@ -43,4 +43,20 @@ class WebhookControllerTest extends TestCase
         $this->assertSame(1, (int) $webhook->type_id);
         $this->assertSame('AWAITING_SHIPMENT', TiktokOrder::find('576461413038785752')?->status);
     }
+
+    public function test_unknown_type_passes_through_as_unknown_on_all_route()
+    {
+        $payload = $this->payload(['type' => 9999]);
+
+        $this->postWebhook('all', $payload)->assertOk();
+
+        $webhook = TiktokWebhook::first();
+
+        $this->assertNotNull($webhook);
+        $this->assertSame('UNKNOWN', $webhook->event_type);
+        $this->assertSame(9999, (int) $webhook->type_id);
+        $this->assertSame('test_shop_id', $webhook->shop_id);
+        $this->assertEquals($payload, $webhook->event_data);
+        $this->assertSame(0, TiktokOrder::count());
+    }
 }

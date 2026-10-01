@@ -37,14 +37,17 @@ class WebhookController extends Controller
 
             if ($eventType) {
                 $methodName = str($eventType)->lower()->camel()->value;
+            } else {
+                // TikTok keeps adding new event types, let unmatched ones pass through
+                $eventType = 'UNKNOWN';
             }
         } else {
             $methodName = str($event)->camel()->value;
             $eventType = str($event)->replace('-', '_')->upper()->value;
-        }
 
-        if (!EventType::fromCase($eventType)) {
-            throw new TikTokException(__('Invalid event type.'));
+            if (!EventType::fromCase($eventType)) {
+                throw new TikTokException(__('Invalid event type.'));
+            }
         }
 
         // dd($eventType, $methodName);
@@ -65,7 +68,7 @@ class WebhookController extends Controller
                 'event_data' => $request->all(),
             ]);
 
-            if (method_exists($this, $methodName)) {
+            if ($methodName && method_exists($this, $methodName)) {
                 return $this->$methodName($webhook, $request);
             }
         } catch (\Throwable $th) {
