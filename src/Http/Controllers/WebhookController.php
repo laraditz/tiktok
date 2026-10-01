@@ -28,23 +28,26 @@ class WebhookController extends Controller
         throw_if($signature !== $match_signature, TikTokException::class, __('Signature not matched.'));
 
         $shopId = $request->string('shop_id');
-        $typeId = $request->type;
+        $typeId = is_numeric($request->type) ? (int) $request->type : null;
         $eventType = null;
         $methodName = null;
 
         if ($event === 'all') {
-            $eventType = EventType::tryFrom($typeId)?->name;
+            $eventType = $typeId !== null ? EventType::tryFrom($typeId)?->name : null;
 
             if ($eventType) {
                 $methodName = str($eventType)->lower()->camel()->value;
+            } else {
+                // TikTok keeps adding new event types, let unmatched ones pass through
+                $eventType = 'UNKNOWN';
             }
         } else {
             $methodName = str($event)->camel()->value;
             $eventType = str($event)->replace('-', '_')->upper()->value;
-        }
 
-        if (!EventType::fromCase($eventType)) {
-            throw new TikTokException(__('Invalid event type.'));
+            if (!EventType::fromCase($eventType)) {
+                throw new TikTokException(__('Invalid event type.'));
+            }
         }
 
         // dd($eventType, $methodName);
@@ -56,7 +59,7 @@ class WebhookController extends Controller
         }
 
         try {
-            event(new WebhookReceived(eventType: $eventType, data: $request->all()));
+            event(new WebhookReceived(eventType: $eventType, data: $request->all(), typeId: $typeId));
 
             $webhook = TiktokWebhook::create([
                 'shop_id' => $shopId,
@@ -65,7 +68,7 @@ class WebhookController extends Controller
                 'event_data' => $request->all(),
             ]);
 
-            if (method_exists($this, $methodName)) {
+            if ($methodName && method_exists($this, $methodName)) {
                 return $this->$methodName($webhook, $request);
             }
         } catch (\Throwable $th) {
@@ -97,7 +100,7 @@ class WebhookController extends Controller
 
     }
 
-    private function orderReturnStatusChange(TiktokWebhook $webhook, Request $request)
+    private function returnStatusChange(TiktokWebhook $webhook, Request $request)
     {
         $data = $request->data;
 

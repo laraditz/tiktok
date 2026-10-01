@@ -12,6 +12,7 @@ class WebhookReceived
     public function __construct(
         public string $eventType,
         public array $data,
+        public ?int $typeId = null,
     ) {
 
     }
