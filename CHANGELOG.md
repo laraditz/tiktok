@@ -2,6 +2,24 @@
 
 All notable changes to `laraditz/tiktok` will be documented in this file
 
+## 1.1.6 - 2026-10-01
+
+### Added
+
+- Webhooks with a type ID not in the `EventType` enum are now accepted on `/tiktok/webhooks/all`, stored and dispatched with event type `UNKNOWN` instead of being rejected
+- `typeId` property on the `WebhookReceived` event
+- New `EventType` cases: `COMBINED_LISTING_CHANGE` (42), `IMAGE_TRANSLATION_COMPLETED` (46), `SKU_STATUS_CHANGE` (50), `GLOBAL_REPLICATION_STATUS_CHANGE` (51), `GLOBAL_LISTING_METHOD_CHANGE` (52), `VIDEO_PRECHECK_RESULT` (55), `SAMPLE_APPLICATION_STATUS_CHANGE` (56), `FBT_MCF_ORDER_STATUS` (58), `SHOPPABLE_VIDEO_PRECHECK_TASKS_RESULT` (59), `PRODUCT_PACKAGE_RECOMMENDED` (62), `ACTIVITY_CHANGE` (63), `AFTERSALES_REQUEST_STATUS_UPDATE` (64), `RMA_STATUS_UPDATE` (65), `APPEAL_COMPLETED` (66), `REFUND_SUCCESS` (67), `INVENTORY_CHANGED` (68), `INVENTORY_CHANGED_BY_SHOP` (71)
+
+### Changed
+
+- **Breaking:** `EventType::INVOICCE_STATUS_CHANGE` renamed to `INVOICE_STATUS_CHANGE` (36)
+- **Breaking:** `EventType::FBT_SELLER_ONBOARDING` renamed to `FBT_MERCHANT_ONBOARDING` (22)
+
+### Fixed
+
+- Return status change webhooks (type 12) now update the `tiktok_return_orders` table
+- Non-numeric webhook `type` values no longer cause a `TypeError`
+
 ## 1.1.5 - 2026-06-15
 
 ### Added
