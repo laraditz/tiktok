@@ -59,4 +59,38 @@ class WebhookControllerTest extends TestCase
         $this->assertEquals($payload, $webhook->event_data);
         $this->assertSame(0, TiktokOrder::count());
     }
+
+    public function test_missing_type_passes_through_as_unknown_with_null_type_id()
+    {
+        $payload = $this->payload();
+        unset($payload['type']);
+
+        $this->postWebhook('all', $payload)->assertOk();
+
+        $webhook = TiktokWebhook::first();
+
+        $this->assertSame('UNKNOWN', $webhook->event_type);
+        $this->assertNull($webhook->type_id);
+    }
+
+    public function test_non_numeric_type_passes_through_as_unknown_with_null_type_id()
+    {
+        $this->postWebhook('all', $this->payload(['type' => 'abc']))->assertOk();
+
+        $webhook = TiktokWebhook::first();
+
+        $this->assertSame('UNKNOWN', $webhook->event_type);
+        $this->assertNull($webhook->type_id);
+        $this->assertSame('abc', $webhook->event_data['type']);
+    }
+
+    public function test_numeric_string_type_resolves_to_enum_name()
+    {
+        $this->postWebhook('all', $this->payload(['type' => '1']))->assertOk();
+
+        $webhook = TiktokWebhook::first();
+
+        $this->assertSame('ORDER_STATUS_CHANGE', $webhook->event_type);
+        $this->assertSame(1, (int) $webhook->type_id);
+    }
 }

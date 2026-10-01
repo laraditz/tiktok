@@ -28,12 +28,12 @@ class WebhookController extends Controller
         throw_if($signature !== $match_signature, TikTokException::class, __('Signature not matched.'));
 
         $shopId = $request->string('shop_id');
-        $typeId = $request->type;
+        $typeId = is_numeric($request->type) ? (int) $request->type : null;
         $eventType = null;
         $methodName = null;
 
         if ($event === 'all') {
-            $eventType = EventType::tryFrom($typeId)?->name;
+            $eventType = $typeId !== null ? EventType::tryFrom($typeId)?->name : null;
 
             if ($eventType) {
                 $methodName = str($eventType)->lower()->camel()->value;
