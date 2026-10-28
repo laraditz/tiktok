@@ -165,4 +165,15 @@ class RequestLoggingTest extends TestCase
         config()->set('tiktok.logging.prune_after_days', 30);
         $this->assertSame(1, (new TiktokWebhook)->prunable()->count());
     }
+
+    #[Test]
+    public function test_redact_array_returns_non_array_input_unchanged()
+    {
+        $service = (new TikTok())->auth();
+        $method = new \ReflectionMethod($service, 'redactArray');
+
+        foreach (['ok', 5, true, null] as $value) {
+            $this->assertSame($value, $method->invoke($service, $value, ['access_token']));
+        }
+    }
 }

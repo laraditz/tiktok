@@ -5,6 +5,7 @@ namespace Laraditz\TikTok\Services;
 use TikTok;
 use Illuminate\Support\Str;
 use Illuminate\Support\Carbon;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Laraditz\TikTok\Events\SellerAuthorized;
@@ -35,7 +36,7 @@ class AuthService extends BaseService
             $authorizedShopsResponse = TikTok::authorization(access_token: $access_token)->shops();
             $authorizedShops = data_get($authorizedShopsResponse, 'data.shops');
 
-            $storedShops = collect();
+            $storedShops = new EloquentCollection();
 
             $commonData = [
                 'access_token' => $access_token,
@@ -156,14 +157,13 @@ class AuthService extends BaseService
             $updateData = $this->getRefreshTokenData($data);
 
             if ($shop->accessToken) {
-                $shop->accessToken->update($updateData->toArray());
+                $token = $shop->accessToken;
+                $token->update($updateData->toArray());
             } else {
-                $shop->accessToken()->create($updateData->toArray());
+                $token = $shop->accessToken()->create($updateData->toArray());
             }
 
-            if ($shop->accessToken) {
-                $this->syncSiblingTokens($shop->accessToken);
-            }
+            $this->syncSiblingTokens($token);
         }
     }
 

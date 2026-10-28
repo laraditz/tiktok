@@ -659,6 +659,9 @@ It refuses to run (exit code 1) unless `tiktok.encrypt_tokens` is on, and is saf
 
 `tiktok_shops.cipher` is widened from `string` to `text` by a new migration (`change_cipher_to_text_in_tiktok_shops_table`); publish and run it before enabling encryption.
 
+- The `2026_10_29` migration uses `->change()`, which needs `doctrine/dbal` on Laravel 10. Rolling it back narrows the column to 255 characters and fails or truncates if encrypted values exist.
+- If you rotate `APP_KEY`, keep the old key in `APP_PREVIOUS_KEYS` so existing encrypted values still decrypt, and do not run `tiktok:encrypt-tokens` until then: it treats any value it cannot decrypt with the current key as plaintext and would encrypt it a second time.
+
 ### Request log controls
 
 | Key | Env | Default |

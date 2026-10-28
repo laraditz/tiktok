@@ -136,7 +136,7 @@ class TikTok
     {
         $authorization = strtolower(trim($authorization));
 
-        if ($rawBody === '' || $authorization === '') {
+        if ($rawBody === '' || $authorization === '' || (string) $this->getAppSecret() === '') {
             return false;
         }
 
@@ -152,7 +152,7 @@ class TikTok
         }
 
         $url = config('tiktok.authorization_url', 'https://services.tiktokshop.com/open/authorize')
-            . '?service_id=' . $serviceId;
+            . '?service_id=' . urlencode($serviceId);
 
         if ($state !== null && $state !== '') {
             $url .= '&state=' . urlencode($state);

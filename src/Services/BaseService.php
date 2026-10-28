@@ -286,10 +286,10 @@ class BaseService
         }
     }
 
-    private function redactArray(?array $data, array $keys): ?array
+    private function redactArray(mixed $data, array $keys): mixed
     {
-        if ($data === null) {
-            return null;
+        if (!is_array($data)) {
+            return $data;
         }
 
         foreach ($data as $key => $value) {
