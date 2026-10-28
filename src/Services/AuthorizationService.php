@@ -27,7 +27,8 @@ class AuthorizationService extends BaseService
                         ->where(function (Builder $query) use ($shop_id, $shop_code, $shop_name) {
                             $query->where('id', $shop_id)
                                 ->orWhere('code', $shop_code);
-                        });
+                        })
+                        ->first();
 
                     if (!$tikTokShop) {
                         TiktokShop::create([
