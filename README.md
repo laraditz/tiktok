@@ -598,6 +598,49 @@ If you discover any security vulnerabilities, please email [raditzfarhan@gmail.c
 - 🐛 [Issue Tracker](https://github.com/laraditz/tiktok/issues)
 - 💬 [Discussions](https://github.com/laraditz/tiktok/discussions)
 
+## Multi-tenant / hardening options (opt-in)
+
+All options below are opt-in. Config keys are read with inline defaults, so an older published config file without them keeps working unchanged.
+
+### Authorization URL
+
+Set your TikTok Shop service ID (and optionally override the authorize endpoint) in `config/tiktok.php`:
+
+| Key | Env | Default |
+|---|---|---|
+| `service_id` | `TIKTOK_SERVICE_ID` | `null` |
+| `authorization_url` | `TIKTOK_AUTHORIZATION_URL` | `https://services.tiktokshop.com/open/authorize` |
+
+```php
+TikTok::authorizationUrl();            // {authorization_url}?service_id={service_id}
+TikTok::authorizationUrl($state);      // ...&state={urlencoded state}
+```
+
+It throws `LogicException('Missing Service ID.')` when `service_id` is empty.
+
+### Webhook signature verification
+
+```php
+$valid = TikTok::verifyWebhookSignature($request->getContent(), (string) $request->header('Authorization'));
+```
+
+The signature is the lowercase hex HMAC of `app_key . body` using `app_secret`, compared in constant time. Empty input returns `false`. Pass the raw request body, not re-encoded JSON.
+
+### `SellerAuthorized` event
+
+After a successful access-token exchange, `Laraditz\TikTok\Events\SellerAuthorized` is dispatched once, after the database transaction commits, if at least one shop was stored. Properties:
+
+- `string $openId`
+- `Illuminate\Support\Collection $shops`: the `TiktokShop` models, each with its `accessToken` relation loaded.
+
+```php
+Event::listen(SellerAuthorized::class, function (SellerAuthorized $event) {
+    foreach ($event->shops as $shop) {
+        // $shop->accessToken->access_token ...
+    }
+});
+```
+
 ## Credits
 
 - [Raditz Farhan](https://github.com/laraditz) - Creator and maintainer

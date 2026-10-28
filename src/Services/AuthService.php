@@ -7,6 +7,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Laraditz\TikTok\Events\SellerAuthorized;
 use Laraditz\TikTok\Models\TiktokShop;
 use Laraditz\TikTok\Models\TiktokRequest;
 use Laraditz\TikTok\Models\TiktokAccessToken;
@@ -17,7 +18,7 @@ class AuthService extends BaseService
 
     public function afterAccessTokenRequest(TiktokRequest $request, array $result = []): void
     {
-        $shop = DB::transaction(function () use ($request, $result) {
+        $stored = DB::transaction(function () use ($request, $result) {
             $access_token = data_get($result, 'data.access_token');
             $access_token_expire_in = data_get($result, 'data.access_token_expire_in');
             $refresh_token = data_get($result, 'data.refresh_token');
@@ -33,6 +34,8 @@ class AuthService extends BaseService
 
             $authorizedShopsResponse = TikTok::authorization(access_token: $access_token)->shops();
             $authorizedShops = data_get($authorizedShopsResponse, 'data.shops');
+
+            $storedShops = collect();
 
             $commonData = [
                 'access_token' => $access_token,
@@ -70,9 +73,19 @@ class AuthService extends BaseService
                             'granted_scopes' => $granted_scopes,
                         ]);
                     }
+
+                    $storedShops->push($shop->load('accessToken'));
                 }
             }
+
+            return [$open_id, $storedShops];
         });
+
+        [$openId, $shops] = $stored;
+
+        if ($shops->isNotEmpty()) {
+            SellerAuthorized::dispatch((string) $openId, $shops);
+        }
     }
 
     public function beforeRefreshTokenRequest(): void

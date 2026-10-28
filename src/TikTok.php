@@ -132,6 +132,35 @@ class TikTok
         return $signature;
     }
 
+    public function verifyWebhookSignature(string $rawBody, string $authorization): bool
+    {
+        $authorization = strtolower(trim($authorization));
+
+        if ($rawBody === '' || $authorization === '') {
+            return false;
+        }
+
+        return hash_equals($this->getWebhookSignature($rawBody), $authorization);
+    }
+
+    public function authorizationUrl(?string $state = null): string
+    {
+        $serviceId = config('tiktok.service_id');
+
+        if (empty($serviceId)) {
+            throw new \LogicException('Missing Service ID.');
+        }
+
+        $url = config('tiktok.authorization_url', 'https://services.tiktokshop.com/open/authorize')
+            . '?service_id=' . $serviceId;
+
+        if ($state !== null && $state !== '') {
+            $url .= '&state=' . urlencode($state);
+        }
+
+        return $url;
+    }
+
     public function setAppKey(string $appKey): void
     {
         $this->app_key = $appKey;
