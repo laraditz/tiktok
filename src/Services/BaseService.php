@@ -182,12 +182,14 @@ class BaseService
 
         $payload = $this->getPayload();
 
-        $request = TiktokRequest::create([
+        $request = new TiktokRequest([
             'shop_id' => $this->tiktok->getShopId(),
             'action' => $this->getServiceName() . '::' . $this->getMethodName(),
             'url' => $url,
             'request' => $payload && count($payload) > 0 ? $payload : null,
         ]);
+
+        $this->persistLog($request, []);
 
         $response = $payload && count($payload) > 0
             ? $client->$method($url, $payload)
@@ -199,7 +201,7 @@ class BaseService
             $result = $response->json();
             $message = data_get($result, 'message');
 
-            $request->update([
+            $this->persistLog($request, [
                 'code' => data_get($result, 'code'),
                 'message' => $message ? Str::limit(trim($message), 255) : null,
                 'error' => Str::limit(trim($e->getMessage()), 255),
@@ -216,7 +218,7 @@ class BaseService
             $code = data_get($result, 'code');
             $message = data_get($result, 'message');
 
-            $request->update([
+            $this->persistLog($request, [
                 'code' => $code,
                 'message' => $message,
                 'response' => $result,
@@ -238,12 +240,79 @@ class BaseService
         }
 
         if (!$request->error) {
-            $request->update([
+            $this->persistLog($request, [
                 'error' => __('API Server Error'),
             ]);
         }
 
         throw new TikTokAPIError(['code' => __('Error'), 'message' => __('API Server Error')]);
+    }
+
+    /**
+     * Fill the log model and save it when request logging is on. The model held
+     * by the after-hooks and events keeps the real values; only the saved copy is redacted.
+     */
+    private function persistLog(TiktokRequest $request, array $attributes): void
+    {
+        $request->fill($attributes);
+
+        if (!config('tiktok.logging.requests', true)) {
+            return;
+        }
+
+        if (!config('tiktok.logging.redact_secrets', false)) {
+            $request->save();
+
+            return;
+        }
+
+        $original = [];
+        foreach (['url', 'request', 'response'] as $key) {
+            $original[$key] = $request->getAttributes()[$key] ?? null;
+        }
+
+        $secretKeys = ['app_secret', 'access_token', 'refresh_token', 'auth_code', 'sign'];
+        $responseKeys = ['access_token', 'refresh_token'];
+
+        $request->url = $this->redactUrl($request->url, $secretKeys);
+        $request->request = $this->redactArray($request->request, $secretKeys);
+        $request->response = $this->redactArray($request->response, $responseKeys);
+
+        try {
+            $request->save();
+        } finally {
+            // restore real values so hooks and events see them, without marking them dirty
+            $request->setRawAttributes(array_merge($request->getAttributes(), $original), true);
+        }
+    }
+
+    private function redactArray(?array $data, array $keys): ?array
+    {
+        if ($data === null) {
+            return null;
+        }
+
+        foreach ($data as $key => $value) {
+            if (is_string($key) && in_array($key, $keys, true)) {
+                $data[$key] = '[REDACTED]';
+            } elseif (is_array($value)) {
+                $data[$key] = $this->redactArray($value, $keys);
+            }
+        }
+
+        return $data;
+    }
+
+    private function redactUrl(?string $url, array $keys): ?string
+    {
+        if (!$url || !str_contains($url, '?')) {
+            return $url;
+        }
+
+        [$base, $query] = explode('?', $url, 2);
+        parse_str($query, $params);
+
+        return $base . '?' . http_build_query($this->redactArray($params, $keys));
     }
 
     private function fireFailedEvents(TiktokRequest $request, ?array $result = [], ?string $message = null)
@@ -260,7 +329,10 @@ class BaseService
         ));
 
         if ($code === 12052260 || $code === 12052048) { //product id not exist
-            dispatch(new RemoveMissingProducts($request, $result));
+            // an unsaved log model (logging off) cannot be queued, so run the job inline
+            $job = new RemoveMissingProducts($request, $result);
+
+            $request->exists ? dispatch($job) : dispatch_sync($job);
         }
     }
 

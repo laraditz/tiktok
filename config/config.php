@@ -61,5 +61,10 @@ return [
         ],
     ],
     'encrypt_tokens' => env('TIKTOK_ENCRYPT_TOKENS', false),
+    'logging' => [
+        'requests' => env('TIKTOK_LOG_REQUESTS', true),
+        'redact_secrets' => env('TIKTOK_LOG_REDACT_SECRETS', false),
+        'prune_after_days' => env('TIKTOK_LOG_PRUNE_AFTER_DAYS'),
+    ],
     'middleware' => ['api'],
 ];

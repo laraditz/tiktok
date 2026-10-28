@@ -659,6 +659,27 @@ It refuses to run (exit code 1) unless `tiktok.encrypt_tokens` is on, and is saf
 
 `tiktok_shops.cipher` is widened from `string` to `text` by a new migration (`change_cipher_to_text_in_tiktok_shops_table`); publish and run it before enabling encryption.
 
+### Request log controls
+
+| Key | Env | Default |
+|---|---|---|
+| `logging.requests` | `TIKTOK_LOG_REQUESTS` | `true` |
+| `logging.redact_secrets` | `TIKTOK_LOG_REDACT_SECRETS` | `false` |
+| `logging.prune_after_days` | `TIKTOK_LOG_PRUNE_AFTER_DAYS` | `null` (never prune) |
+
+- `logging.requests` set to `false` stops writing rows to `tiktok_requests`. Token exchange, token refresh and the other after-request hooks still run.
+- `logging.redact_secrets` set to `true` stores `[REDACTED]` in place of `app_secret`, `access_token`, `refresh_token`, `auth_code` and `sign` in the logged request and URL query string, and `access_token` and `refresh_token` in the logged response. Only the saved log changes; the HTTP call, the returned response and the stored tokens are untouched.
+- `logging.prune_after_days` set to a positive integer makes `TiktokRequest` and `TiktokWebhook` rows older than that many days prunable. Laravel's `model:prune` only discovers models in `app/Models`, so package models are pruned only if your app schedules `model:prune --model=...` itself:
+
+```php
+Schedule::command('model:prune', [
+    '--model' => [
+        \Laraditz\TikTok\Models\TiktokRequest::class,
+        \Laraditz\TikTok\Models\TiktokWebhook::class,
+    ],
+])->daily();
+```
+
 ## Credits
 
 - [Raditz Farhan](https://github.com/laraditz) - Creator and maintainer
