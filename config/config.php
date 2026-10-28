@@ -60,5 +60,6 @@ return [
             'transactions_by_statement' => '/finance/202501/statements/{statement_id}/statement_transactions',
         ],
     ],
+    'encrypt_tokens' => env('TIKTOK_ENCRYPT_TOKENS', false),
     'middleware' => ['api'],
 ];

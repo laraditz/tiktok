@@ -641,6 +641,24 @@ Event::listen(SellerAuthorized::class, function (SellerAuthorized $event) {
 });
 ```
 
+### Token and shop cipher encryption
+
+| Key | Env | Default |
+|---|---|---|
+| `encrypt_tokens` | `TIKTOK_ENCRYPT_TOKENS` | `false` |
+
+When `true`, `tiktok_access_tokens.access_token`, `tiktok_access_tokens.refresh_token` and `tiktok_shops.cipher` are stored encrypted with Laravel's `Crypt` (so `APP_KEY` must be set and kept). Reads always return plaintext, and rows written before you enabled the option (or after you disable it) still read correctly. `TikTok::getShopCipher()` returns the plaintext cipher.
+
+Always write these columns through the Eloquent models; query-builder updates skip the cast. Encrypt existing rows once with:
+
+```bash
+php artisan tiktok:encrypt-tokens
+```
+
+It refuses to run (exit code 1) unless `tiktok.encrypt_tokens` is on, and is safe to re-run (`Encrypted 0 value(s).`).
+
+`tiktok_shops.cipher` is widened from `string` to `text` by a new migration (`change_cipher_to_text_in_tiktok_shops_table`); publish and run it before enabling encryption.
+
 ## Credits
 
 - [Raditz Farhan](https://github.com/laraditz) - Creator and maintainer

@@ -67,7 +67,21 @@ class TokenRefreshSiblingsTest extends TestCase
 
     public function test_sibling_update_respects_encryption()
     {
-        $this->markTestSkipped('needs Task 12');
+        config()->set('app.key', 'base64:' . base64_encode(str_repeat('a', 32)));
+        config()->set('app.cipher', 'AES-256-CBC');
+        config()->set('tiktok.encrypt_tokens', true);
+
+        $a = $this->tokenFor('shop_a', 'OPEN1');
+        $b = $this->tokenFor('shop_b', 'OPEN1');
+        $this->fakeRefresh();
+
+        (new TikTok())->auth()->refreshAccessToken($a);
+
+        $raw = \Illuminate\Support\Facades\DB::table('tiktok_access_tokens')->where('id', $b->id)->first();
+        $this->assertNotSame('new_refresh', $raw->refresh_token);
+        $this->assertNotSame('new_access', $raw->access_token);
+        $this->assertSame('new_refresh', $b->fresh()->refresh_token);
+        $this->assertSame('new_access', $b->fresh()->access_token);
     }
 
     public function test_shops_request_creates_missing_shop()
