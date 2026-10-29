@@ -5,8 +5,10 @@ namespace Laraditz\TikTok\Services;
 use TikTok;
 use Illuminate\Support\Str;
 use Illuminate\Support\Carbon;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Laraditz\TikTok\Events\SellerAuthorized;
 use Laraditz\TikTok\Models\TiktokShop;
 use Laraditz\TikTok\Models\TiktokRequest;
 use Laraditz\TikTok\Models\TiktokAccessToken;
@@ -17,7 +19,7 @@ class AuthService extends BaseService
 
     public function afterAccessTokenRequest(TiktokRequest $request, array $result = []): void
     {
-        $shop = DB::transaction(function () use ($request, $result) {
+        $stored = DB::transaction(function () use ($request, $result) {
             $access_token = data_get($result, 'data.access_token');
             $access_token_expire_in = data_get($result, 'data.access_token_expire_in');
             $refresh_token = data_get($result, 'data.refresh_token');
@@ -27,19 +29,21 @@ class AuthService extends BaseService
             $seller_base_region = data_get($result, 'data.seller_base_region');
             $user_type = data_get($result, 'data.user_type');
             $granted_scopes = data_get($result, 'data.granted_scopes');
-            $timezone = config('app.timezone') ?? config('tiktok.defaut_timezone');
+            $timezone = config('app.timezone') ?? config('tiktok.default_timezone', config('tiktok.defaut_timezone'));
 
             throw_if(!$open_id, TikTokTokenException::class, __('Missing open_id'));
 
             $authorizedShopsResponse = TikTok::authorization(access_token: $access_token)->shops();
             $authorizedShops = data_get($authorizedShopsResponse, 'data.shops');
 
+            $storedShops = new EloquentCollection();
+
             $commonData = [
                 'access_token' => $access_token,
                 'refresh_token' => $refresh_token,
                 'expires_at' => Carbon::createFromTimestamp($access_token_expire_in, $timezone),
                 'refresh_expires_at' => Carbon::createFromTimestamp($refresh_token_expire_in, $timezone),
-                'code' => data_get($request, 'code'),
+                'code' => data_get($this->getQueryString(), 'auth_code'),
             ];
 
             if ($authorizedShops && count($authorizedShops) > 0) {
@@ -70,9 +74,19 @@ class AuthService extends BaseService
                             'granted_scopes' => $granted_scopes,
                         ]);
                     }
+
+                    $storedShops->push($shop->load('accessToken'));
                 }
             }
+
+            return [$open_id, $storedShops];
         });
+
+        [$openId, $shops] = $stored;
+
+        if ($shops->isNotEmpty()) {
+            SellerAuthorized::dispatch((string) $openId, $shops);
+        }
     }
 
     public function beforeRefreshTokenRequest(): void
@@ -113,6 +127,8 @@ class AuthService extends BaseService
             $accessToken->update($updateData->toArray());
 
             $accessToken->refresh();
+
+            $this->syncSiblingTokens($accessToken);
         }
 
         return $accessToken;
@@ -141,16 +157,42 @@ class AuthService extends BaseService
             $updateData = $this->getRefreshTokenData($data);
 
             if ($shop->accessToken) {
-                $shop->accessToken->update($updateData->toArray());
+                $token = $shop->accessToken;
+                $token->update($updateData->toArray());
             } else {
-                $shop->accessToken()->create($updateData->toArray());
+                $token = $shop->accessToken()->create($updateData->toArray());
             }
+
+            $this->syncSiblingTokens($token);
         }
+    }
+
+    /**
+     * Copy refreshed tokens onto every other token row sharing the same open_id.
+     * Idempotent, and updates go through each model so casts apply.
+     */
+    private function syncSiblingTokens(TiktokAccessToken $accessToken): void
+    {
+        if (!$accessToken->open_id) {
+            return;
+        }
+
+        $values = [
+            'access_token' => $accessToken->access_token,
+            'refresh_token' => $accessToken->refresh_token,
+            'expires_at' => $accessToken->expires_at,
+            'refresh_expires_at' => $accessToken->refresh_expires_at,
+        ];
+
+        TiktokAccessToken::where('open_id', $accessToken->open_id)
+            ->where('id', '!=', $accessToken->getKey())
+            ->get()
+            ->each(fn(TiktokAccessToken $sibling) => $sibling->update($values));
     }
 
     private function getRefreshTokenData(array $data = []): Collection
     {
-        $timezone = config('app.timezone') ?? config('tiktok.defaut_timezone');
+        $timezone = config('app.timezone') ?? config('tiktok.default_timezone', config('tiktok.defaut_timezone'));
 
         return collect($data)
             ->mapWithKeys(function ($value, $key) use ($timezone) {

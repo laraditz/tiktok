@@ -2,6 +2,7 @@
 
 namespace Laraditz\TikTok\Models;
 
+use Laraditz\TikTok\Casts\EncryptedToken;
 use Laraditz\TikTok\Enums\UserType;
 use Illuminate\Database\Eloquent\Model;
 
@@ -25,6 +26,8 @@ class TiktokAccessToken extends Model
     protected function casts(): array
     {
         return [
+            'access_token' => EncryptedToken::class,
+            'refresh_token' => EncryptedToken::class,
             'granted_scopes' => 'json',
             'expires_at' => 'datetime',
             'refresh_expires_at' => 'datetime',

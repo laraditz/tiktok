@@ -2,6 +2,7 @@
 
 namespace Laraditz\TikTok\Models;
 
+use Laraditz\TikTok\Casts\EncryptedToken;
 use Illuminate\Database\Eloquent\Model;
 
 class TiktokShop extends Model
@@ -15,6 +16,13 @@ class TiktokShop extends Model
         'cipher',
         'open_id',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'cipher' => EncryptedToken::class,
+        ];
+    }
 
     public function getIncrementing(): bool
     {
