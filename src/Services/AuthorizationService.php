@@ -23,13 +23,17 @@ class AuthorizationService extends BaseService
                     $shop_code = data_get($shop, 'code');
                     $shop_name = data_get($shop, 'name');
 
-                    $tikTokShop = TiktokShop::query()
-                        ->where(function (Builder $query) use ($shop_id, $shop_code, $shop_name) {
-                            $query->where('id', $shop_id)
-                                ->orWhere('code', $shop_code);
-                        });
+                    $matches = TiktokShop::query()
+                        ->where(function (Builder $query) use ($shop_id, $shop_code) {
+                            $query->where('id', $shop_id);
 
-                    if (!$tikTokShop) {
+                            if ($shop_code !== null) {
+                                $query->orWhere('code', $shop_code);
+                            }
+                        })
+                        ->get();
+
+                    if ($matches->isEmpty()) {
                         TiktokShop::create([
                             'id' => $shop_id,
                             'code' => $shop_code,
@@ -39,13 +43,14 @@ class AuthorizationService extends BaseService
                             'cipher' => data_get($shop, 'cipher'),
                         ]);
                     } else {
-                        $tikTokShop->update([
+                        // update through each model so the cipher cast applies
+                        $matches->each(fn(TiktokShop $tikTokShop) => $tikTokShop->update([
                             'name' => $shop_name,
                             'code' => $shop_code,
                             'region' => data_get($shop, 'region'),
                             'seller_type' => data_get($shop, 'seller_type'),
                             'cipher' => data_get($shop, 'cipher'),
-                        ]);
+                        ]));
                     }
                 }
             }

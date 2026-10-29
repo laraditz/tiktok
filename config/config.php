@@ -12,6 +12,8 @@ return [
     'shop_id' => env('TIKTOK_SHOP_ID'),
     'shop_code' => env('TIKTOK_SHOP_CODE'),
     'shop_name' => env('TIKTOK_SHOP_NAME'),
+    'service_id' => env('TIKTOK_SERVICE_ID'),
+    'authorization_url' => env('TIKTOK_AUTHORIZATION_URL', 'https://services.tiktokshop.com/open/authorize'),
     'auth_url' => 'https://auth.tiktok-shops.com',
     'base_url' => 'https://open-api.tiktokglobalshop.com',
     'home_url' => env('TIKTOK_HOME_URL', '/'),
@@ -57,6 +59,12 @@ return [
             'transactions_by_order' => '/finance/202501/orders/{order_id}/statement_transactions',
             'transactions_by_statement' => '/finance/202501/statements/{statement_id}/statement_transactions',
         ],
+    ],
+    'encrypt_tokens' => env('TIKTOK_ENCRYPT_TOKENS', false),
+    'logging' => [
+        'requests' => env('TIKTOK_LOG_REQUESTS', true),
+        'redact_secrets' => env('TIKTOK_LOG_REDACT_SECRETS', false),
+        'prune_after_days' => env('TIKTOK_LOG_PRUNE_AFTER_DAYS'),
     ],
     'middleware' => ['api'],
 ];

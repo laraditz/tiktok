@@ -598,6 +598,91 @@ If you discover any security vulnerabilities, please email [raditzfarhan@gmail.c
 - 🐛 [Issue Tracker](https://github.com/laraditz/tiktok/issues)
 - 💬 [Discussions](https://github.com/laraditz/tiktok/discussions)
 
+## Multi-tenant / hardening options (opt-in)
+
+All options below are opt-in. Config keys are read with inline defaults, so an older published config file without them keeps working unchanged.
+
+### Authorization URL
+
+Set your TikTok Shop service ID (and optionally override the authorize endpoint) in `config/tiktok.php`:
+
+| Key | Env | Default |
+|---|---|---|
+| `service_id` | `TIKTOK_SERVICE_ID` | `null` |
+| `authorization_url` | `TIKTOK_AUTHORIZATION_URL` | `https://services.tiktokshop.com/open/authorize` |
+
+```php
+TikTok::authorizationUrl();            // {authorization_url}?service_id={service_id}
+TikTok::authorizationUrl($state);      // ...&state={urlencoded state}
+```
+
+It throws `LogicException('Missing Service ID.')` when `service_id` is empty.
+
+### Webhook signature verification
+
+```php
+$valid = TikTok::verifyWebhookSignature($request->getContent(), (string) $request->header('Authorization'));
+```
+
+The signature is the lowercase hex HMAC of `app_key . body` using `app_secret`, compared in constant time. Empty input returns `false`. Pass the raw request body, not re-encoded JSON.
+
+### `SellerAuthorized` event
+
+After a successful access-token exchange, `Laraditz\TikTok\Events\SellerAuthorized` is dispatched once, after the database transaction commits, if at least one shop was stored. Properties:
+
+- `string $openId`
+- `Illuminate\Support\Collection $shops`: the `TiktokShop` models, each with its `accessToken` relation loaded.
+
+```php
+Event::listen(SellerAuthorized::class, function (SellerAuthorized $event) {
+    foreach ($event->shops as $shop) {
+        // $shop->accessToken->access_token ...
+    }
+});
+```
+
+### Token and shop cipher encryption
+
+| Key | Env | Default |
+|---|---|---|
+| `encrypt_tokens` | `TIKTOK_ENCRYPT_TOKENS` | `false` |
+
+When `true`, `tiktok_access_tokens.access_token`, `tiktok_access_tokens.refresh_token` and `tiktok_shops.cipher` are stored encrypted with Laravel's `Crypt` (so `APP_KEY` must be set and kept). Reads always return plaintext, and rows written before you enabled the option (or after you disable it) still read correctly. `TikTok::getShopCipher()` returns the plaintext cipher.
+
+Always write these columns through the Eloquent models; query-builder updates skip the cast. Encrypt existing rows once with:
+
+```bash
+php artisan tiktok:encrypt-tokens
+```
+
+It refuses to run (exit code 1) unless `tiktok.encrypt_tokens` is on, and is safe to re-run (`Encrypted 0 value(s).`).
+
+`tiktok_shops.cipher` is widened from `string` to `text` by a new migration (`change_cipher_to_text_in_tiktok_shops_table`); publish and run it before enabling encryption.
+
+- The `2026_10_29` migration uses `->change()`, which needs `doctrine/dbal` on Laravel 10. Rolling it back narrows the column to 255 characters and fails or truncates if encrypted values exist.
+- If you rotate `APP_KEY`, keep the old key in `APP_PREVIOUS_KEYS` so existing encrypted values still decrypt, and do not run `tiktok:encrypt-tokens` until then: it treats any value it cannot decrypt with the current key as plaintext and would encrypt it a second time.
+
+### Request log controls
+
+| Key | Env | Default |
+|---|---|---|
+| `logging.requests` | `TIKTOK_LOG_REQUESTS` | `true` |
+| `logging.redact_secrets` | `TIKTOK_LOG_REDACT_SECRETS` | `false` |
+| `logging.prune_after_days` | `TIKTOK_LOG_PRUNE_AFTER_DAYS` | `null` (never prune) |
+
+- `logging.requests` set to `false` stops writing rows to `tiktok_requests`. Token exchange, token refresh and the other after-request hooks still run.
+- `logging.redact_secrets` set to `true` stores `[REDACTED]` in place of `app_secret`, `access_token`, `refresh_token`, `auth_code` and `sign` in the logged request and URL query string, and `access_token` and `refresh_token` in the logged response. Only the saved log changes; the HTTP call, the returned response and the stored tokens are untouched.
+- `logging.prune_after_days` set to a positive integer makes `TiktokRequest` and `TiktokWebhook` rows older than that many days prunable. Laravel's `model:prune` only discovers models in `app/Models`, so package models are pruned only if your app schedules `model:prune --model=...` itself:
+
+```php
+Schedule::command('model:prune', [
+    '--model' => [
+        \Laraditz\TikTok\Models\TiktokRequest::class,
+        \Laraditz\TikTok\Models\TiktokWebhook::class,
+    ],
+])->daily();
+```
+
 ## Credits
 
 - [Raditz Farhan](https://github.com/laraditz) - Creator and maintainer
