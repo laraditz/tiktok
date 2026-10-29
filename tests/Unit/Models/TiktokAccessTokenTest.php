@@ -84,13 +84,17 @@ class TiktokAccessTokenTest extends TestCase
 
     public function test_can_check_if_token_is_expired()
     {
+        $shop = $this->createTikTokShop();
+
         // Create expired token
         $expiredToken = $this->createAccessToken([
+            'subjectable_id' => $shop->id,
             'expires_at' => now()->subDays(1)
         ]);
 
         // Create valid token
         $validToken = $this->createAccessToken([
+            'subjectable_id' => $shop->id,
             'expires_at' => now()->addDays(1)
         ]);
 
@@ -100,13 +104,17 @@ class TiktokAccessTokenTest extends TestCase
 
     public function test_can_check_if_refresh_token_is_expired()
     {
+        $shop = $this->createTikTokShop();
+
         // Create token with expired refresh token
         $expiredRefreshToken = $this->createAccessToken([
+            'subjectable_id' => $shop->id,
             'refresh_expires_at' => now()->subDays(1)
         ]);
 
         // Create token with valid refresh token
         $validRefreshToken = $this->createAccessToken([
+            'subjectable_id' => $shop->id,
             'refresh_expires_at' => now()->addDays(1)
         ]);
 
@@ -145,13 +153,17 @@ class TiktokAccessTokenTest extends TestCase
 
     public function test_can_get_tokens_expiring_soon()
     {
+        $shop = $this->createTikTokShop();
+
         // Create token expiring soon
         $expiringSoon = $this->createAccessToken([
+            'subjectable_id' => $shop->id,
             'expires_at' => now()->addHours(2)
         ]);
 
         // Create token not expiring soon
         $notExpiringSoon = $this->createAccessToken([
+            'subjectable_id' => $shop->id,
             'expires_at' => now()->addDays(5)
         ]);
 
@@ -163,13 +175,17 @@ class TiktokAccessTokenTest extends TestCase
 
     public function test_can_scope_valid_tokens()
     {
+        $shop = $this->createTikTokShop();
+
         // Create expired token
         $expiredToken = $this->createAccessToken([
+            'subjectable_id' => $shop->id,
             'expires_at' => now()->subDays(1)
         ]);
 
         // Create valid token
         $validToken = $this->createAccessToken([
+            'subjectable_id' => $shop->id,
             'expires_at' => now()->addDays(1)
         ]);
 
