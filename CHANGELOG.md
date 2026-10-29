@@ -2,6 +2,24 @@
 
 All notable changes to `laraditz/tiktok` will be documented in this file
 
+## 1.2.0 - 2026-10-29
+
+### Added
+
+- Support Laravel 13.
+- `TikTok::authorizationUrl(?string $state = null)`, built from the new optional `tiktok.service_id` config.
+- `TikTok::verifyWebhookSignature(string $rawBody, string $authorization): bool` to verify webhook signatures.
+- `SellerAuthorized` event, fired after a seller's access token is obtained.
+- Opt-in token and shop `cipher` encryption: `TIKTOK_ENCRYPT_TOKENS` (default `false`) and the `tiktok:encrypt-tokens` command. Publish and run the new migration that widens the shop `cipher` column to `text` before enabling it.
+- Opt-in request log controls: `TIKTOK_LOG_REQUESTS` (default `true`), `TIKTOK_LOG_REDACT_SECRETS` (default `false`, also masks secrets in the stored URL) and `TIKTOK_LOG_PRUNE_AFTER_DAYS` for pruning `TiktokRequest` and `TiktokWebhook` with `model:prune`.
+
+### Fixed
+
+- Refreshing a token now updates every `tiktok_access_tokens` row with the same `open_id`, not only the one passed in.
+- Re-authorizing a seller now creates shops that don't exist yet.
+- The token's `code` now stores the authorization code instead of the API response code.
+- Read the `default_timezone` config key, falling back to the old `defaut_timezone` key.
+
 ## 1.1.6 - 2026-10-01
 
 ### Added
